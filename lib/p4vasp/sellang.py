@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -51,7 +51,7 @@ def getRangeForSpec(n,struct):
         return []
     for i in range(n):
         before+=info[i].atomspertype
-    return range(before,before+info[n].atomspertype)
+    return list(range(before,before+info[n].atomspertype))
 
 def getRangeForId(I,struct):
     info=struct.info
@@ -59,7 +59,7 @@ def getRangeForId(I,struct):
     before=0
     for i in range(len(info)):
         if strip(info[i].element)==I:
-            l.extend(range(before,before+info[i].atomspertype))
+            l.extend(list(range(before,before+info[i].atomspertype)))
         before+=info[i].atomspertype
     return l
 
@@ -77,7 +77,7 @@ def decode(text,struct=None):
         try:
             m=t_all.match(x)
             if m is not None:
-                return range(len(struct))
+                return list(range(len(struct)))
             m=t_num.match(x)
             if m is not None:
                 n=int(m.group(1))-1
@@ -86,15 +86,15 @@ def decode(text,struct=None):
                 continue
             m=t_lrange.match(x)
             if m is not None:
-                append_set(l,range(0,int(m.group(1))))
+                append_set(l,list(range(0,int(m.group(1)))))
                 continue
             m=t_rrange.match(x)
             if m is not None:
-                append_set(l,range(int(m.group(1))-1,len(struct)))
+                append_set(l,list(range(int(m.group(1))-1,len(struct))))
                 continue
             m=t_range.match(x)
             if m is not None:
-                append_set(l,range(int(m.group(1))-1, int(m.group(2))))
+                append_set(l,list(range(int(m.group(1))-1, int(m.group(2)))))
                 continue
             m=t_spec.match(x)
             if m is not None:
@@ -147,14 +147,14 @@ def decode(text,struct=None):
 #  return map(int,split(text))
 
 def encode(sel,struct=None):
-    if contains_set(sel,range(len(struct))):
+    if contains_set(sel,list(range(len(struct)))):
         return "all"
     info=struct.info
     l=sel[:]
     before=0
     s=""
     for i in range(len(info)):
-        r=range(before,before+info[i].atomspertype)
+        r=list(range(before,before+info[i].atomspertype))
         if contains_set(l,r):
             if len(s):
                 s+=" "
@@ -183,7 +183,7 @@ def encode(sel,struct=None):
         remove_set(l,r)
     if len(s):
         s+=" "
-    s+=join(map(str,l))
+    s+=join(list(map(str,l)))
     return s
 
 
@@ -211,82 +211,82 @@ def encodeRange(sel):
         remove_set(l,r)
     if len(s):
         s+=" "
-    s+=join(map(str,l))
+    s+=join(list(map(str,l)))
     return s
 
 if __name__=="__main__":
-    from SystemPM import *
+    from .SystemPM import *
 
     system=XMLSystemPM("../vasprun2.xml")
-    print system.FINAL_STRUCTURE.info.toxml()
+    print((system.FINAL_STRUCTURE.info.toxml()))
     s="#1"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="#2"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="#1 #2"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="#2:1"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="#2:2-"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="#2:-3"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="#2:2-3"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="2-4"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="-4"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="2-"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="Ti"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="O"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="O:2"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="O:2-"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="O:-3"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
     s="O:2-3"
-    print s,decode(s,system.FINAL_STRUCTURE)
+    print((s,decode(s,system.FINAL_STRUCTURE)))
 
-    print
+    print()
 
     r=[0,1,2,3,4,5]
     s=encode(r,system.FINAL_STRUCTURE)
     c=decode(s,system.FINAL_STRUCTURE)
-    print r
-    print s
-    print c
-    print
+    print(r)
+    print(s)
+    print(c)
+    print()
     r=[1,2,3,4,5]
     s=encode(r,system.FINAL_STRUCTURE)
     c=decode(s,system.FINAL_STRUCTURE)
-    print r
-    print s
-    print c
-    print
+    print(r)
+    print(s)
+    print(c)
+    print()
     r=[0,1,2,3,4]
     s=encode(r,system.FINAL_STRUCTURE)
     c=decode(s,system.FINAL_STRUCTURE)
-    print r
-    print s
-    print c
-    print
+    print(r)
+    print(s)
+    print(c)
+    print()
     r=[3,4,5]
     s=encode(r,system.FINAL_STRUCTURE)
     c=decode(s,system.FINAL_STRUCTURE)
-    print r
-    print s
-    print c
-    print
+    print(r)
+    print(s)
+    print(c)
+    print()
     r=[0,1]
     s=encode(r,system.FINAL_STRUCTURE)
     c=decode(s,system.FINAL_STRUCTURE)
-    print r
-    print s
-    print c
-    print
+    print(r)
+    print(s)
+    print(c)
+    print()
     #decode("1 2- -3 4-5 Au #6 #7:8 #9:10- #11:-12 #13:14-15 B:16 C:17- Cd:-18 Eu:19-20")

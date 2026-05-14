@@ -27,6 +27,7 @@ from glob import glob
 import sys
 import p4vasp.SystemPM
 from p4vasp import *
+from p4vasp.compat import resolve_dotted_name
 from types import *
 from p4vasp.applet.appletlist import appletlist
 
@@ -68,14 +69,7 @@ class AppletRepository(repository.Repository,p4vasp.SystemPM.SystemListListener)
 
 
 def getClass(c):
-    v=map(strip,split(c,"."))
-    if len(v) and len(c):
-        if len(v)==1:
-            c=eval(c)
-        else:
-#            print "import %s\no=%s\n"%(join(v[:-1],"."),c)
-            exec "import %s\nc=%s\n"%(join(v[:-1],"."),c)
-    return c
+    return resolve_dotted_name(c, globals())
 
 def findApplets(include=[],exclude=["p4vasp.applet.Applet.Applet"],
 modules=["p4vasp.applet","applets",""]):
@@ -89,9 +83,9 @@ modules=["p4vasp.applet","applets",""]):
             else:
                 pp=p+join(split(pe,"."),os.sep)+os.sep
             for ext in ["*.py","*.pyc","*.pyo","*.pyw"]:
-                pl=map(lambda x:os.path.splitext(os.path.basename(x))[0],glob(pp+ext))
+                pl=[os.path.splitext(os.path.basename(x))[0] for x in glob(pp+ext)]
                 for x in pl:
-                    if find(x,"Applet")==(len(x)-len("Applet")):
+                    if x.endswith("Applet"):
                         if len(pe):
                             c=pe+"."+x+"."+x
                         else:
@@ -181,6 +175,6 @@ def setAppletFactory(a):
 class AppletRepositoryProfile(repository.RepositoryProfile):
     def __init__(self,name=AppletRepository,tagname="applets"):
         repository.RepositoryProfile.__init__(self,name,tagname=tagname)
-        for f in appletfactory().values():
+        for f in list(appletfactory().values()):
             if f.Class.store_profile is not None:
                 self.addClass(f.Class.store_profile)

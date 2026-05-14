@@ -1,16 +1,16 @@
 # piddle.py -- Plug In Drawing, Does Little Else
 # Copyright (C) 1999  Joseph J. Strout
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 2 of the License, or (at your option) any later version.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -38,7 +38,7 @@ JJS, 2/10/99: as discussed, I've removed the Shape classes and moved
 JJS, 2/11/99: removed Canvas default access functions; added fontHeight
 	etc. functions; fixed numerous typos; added drawRect and drawRoundRect
 	(how could I forget those?).  Added StateSaver utility class.
-	
+
 	2/11/99 (later): minor fixes.
 
 JJS, 2/12/99: removed scaling/sizing references.  Changed event handler
@@ -46,7 +46,7 @@ JJS, 2/12/99: removed scaling/sizing references.  Changed event handler
 	drawing function (needs default implementation).  Removed edgeList
 	from drawPolygon.  Added drawFigure.  Changed drawLines to draw
 	a set of disconnected lines (of uniform color and width).
-	
+
 	2/12/99 (later): added HexColor function and WWW color constants.
 	Fixed bug in StateSaver.  Changed params to drawArc.
 
@@ -59,8 +59,8 @@ JJS, 2/19/99: added drawImage method; added angle parameter to drawString.
 
 JJS, 3/01/99: nailed down drawFigure interface (and added needed constants).
 
-JJS, 3/08/99: added arcPoints and curvePoints methods; added default 
-	implementations for drawRect, drawRoundRect, drawArc, drawCurve, 
+JJS, 3/08/99: added arcPoints and curvePoints methods; added default
+	implementations for drawRect, drawRoundRect, drawArc, drawCurve,
 	drawEllipse, and drawFigure (!), mostly thanks to Magnus.
 
 JJS, 3/09/99: added 'closed' parameter to drawPolygon, drawCurve, and
@@ -91,8 +91,8 @@ JJS, 10/21/99: made Color immutable; fixed bugs in default fontHeight,
 		drawMultiLineString
 """
 
-__version_maj_number__ = 1.0 
-__version_min_number__ = 15  
+__version_maj_number__ = 1.0
+__version_min_number__ = 15
 __version__ = "%s.%s" % ( __version_maj_number__,  __version_min_number__) # c.f. "1.0.15"
 
 from types import StringType, IntType, InstanceType
@@ -108,9 +108,9 @@ class StateSaver:
 	"""This is a little utility class for saving and restoring the
 	default drawing parameters of a canvas.  To use it, add a line
 	like this before changing any of the parameters:
-	
+
 		saver = StateSaver(myCanvas)
-	
+
 	then, when "saver" goes out of scope, it will automagically
 	restore the drawing parameters of myCanvas."""
 
@@ -120,7 +120,7 @@ class StateSaver:
 		self.defaultFillColor = canvas.defaultFillColor
 		self.defaultLineWidth = canvas.defaultLineWidth
 		self.defaultFont = canvas.defaultFont
-	
+
 	def __del__(self):
 		self.canvas.defaultLineColor = self.defaultLineColor
 		self.canvas.defaultFillColor = self.defaultFillColor
@@ -131,7 +131,7 @@ class StateSaver:
 # Color
 #-------------------------------------------------------------------------
 class Color:
-	"""This class is used to represent color.  Components red, green, blue 
+	"""This class is used to represent color.  Components red, green, blue
 	are in the range 0 (dark) to 1 (full intensity)."""
 
 	def __init__(self, red=0, green=0, blue=0):
@@ -143,32 +143,32 @@ class Color:
 		d["blue"] = _float(blue)
 
 	def __setattr__(self, name, value):
-		raise TypeError, "piddle.Color has read-only attributes"
+		raise TypeError("piddle.Color has read-only attributes")
 
 	def __mul__(self,x):
 		return Color(self.red*x, self.green*x, self.blue*x)
-	
+
 	def __rmul__(self,x):
 		return Color(self.red*x, self.green*x, self.blue*x)
-	
+
 	def __div__(self,x):
 		return Color(self.red/x, self.green/x, self.blue/x)
-	
+
 	def __rdiv__(self,x):
 		return Color(self.red/x, self.green/x, self.blue/x)
-	
+
 	def __add__(self,x):
 		return Color(self.red+x.red, self.green+x.green, self.blue+x.blue)
-		
+
 	def __sub__(self,x):
 		return Color(self.red-x.red, self.green-x.green, self.blue-x.blue)
-		
+
 	def __repr__(self):
 		return "Color(%1.2f,%1.2f,%1.2f)" % (self.red, self.green, self.blue)
 
 	def __hash__(self):
 		return hash( (self.red, self.green, self.blue) )
-		
+
 	def __cmp__(self,other):
 		try:
 			dsum = 4*self.red-4*other.red + 2*self.green-2*other.green + self.blue-other.blue
@@ -177,7 +177,7 @@ class Color:
 		if dsum > 0: return 1
 		if dsum < 0: return -1
 		return 0
-		
+
 def HexColor(val):
 	"""This class converts a hex string, or an actual integer number,
 	into the corresponding color.  E.g., in "AABBCC" or 0xAABBCC,
@@ -185,10 +185,10 @@ def HexColor(val):
 	if type(val) == StringType:
 		val = string.atoi(val,16)
 	factor = 1.0 / 255
-	return Color(factor * ((val >> 16) & 0xFF), 
+	return Color(factor * ((val >> 16) & 0xFF),
 			  factor * ((val >> 8) & 0xFF),
 			  factor * (val & 0xFF))
-		
+
 # color constants -- mostly from HTML standard
 aliceblue = 	HexColor(0xF0F8FF)
 antiquewhite = 	HexColor(0xFAEBD7)
@@ -340,7 +340,7 @@ transparent = Color(-1, -1, -1)
 #-------------------------------------------------------------------------
 class Font:
     "This class represents font typeface, size, and style."
-	
+
     def __init__(self, size=12, bold=0, italic=0, underline=0, face=None):
         # public mode variables
         d = self.__dict__
@@ -354,7 +354,7 @@ class Font:
         # typeface -- a name or set of names, interpreted by the Canvas,
         # or "None" to indicate the Canvas-specific default typeface
         d["face"] = face
-	
+
     def __cmp__(self, other):
         """Compare two fonts to see if they're the same."""
         if self.face == other.face and self.size == other.size and \
@@ -369,7 +369,7 @@ class Font:
                                          self.underline, repr(self.face))
 
     def __setattr__(self, name, value):
-        raise TypeError, "piddle.Font has read-only attributes"
+        raise TypeError("piddle.Font has read-only attributes")
 
 
 #-------------------------------------------------------------------------
@@ -405,9 +405,9 @@ class Canvas:
 	"""This is the base class for a drawing canvas.  The 'plug-in renderers'
 	we speak of are really just classes derived from this one, which implement
 	the various drawing methods."""
-	
+
 	def __init__(self, size=(300,300), name="PIDDLE"):
-		"""Initialize the canvas, and set default drawing parameters. 
+		"""Initialize the canvas, and set default drawing parameters.
 		Derived classes should be sure to call this method."""
 		# defaults used when drawing
 		self.defaultLineColor = black
@@ -416,7 +416,7 @@ class Canvas:
 		self.defaultFont = Font()
 
 		# set up null event handlers
-		
+
 		# onClick: x,y is Canvas coordinates of mouseclick
 		def ignoreClick(canvas,x,y): pass
 		self.onClick = ignoreClick
@@ -437,7 +437,7 @@ class Canvas:
 	def isInteractive(self):
 		"Returns 1 if onClick, onOver, and onKey events are possible, 0 otherwise."
 		return 0
-	
+
 	def canUpdate(self):
 		"Returns 1 if the drawing can be meaningfully updated over time \
 		(e.g., screen graphics), 0 otherwise (e.g., drawing to a file)."
@@ -447,74 +447,74 @@ class Canvas:
 	def clear(self):
 		"Call this to clear and reset the graphics context."
 		pass
-		
+
 	def flush(self):
 		"Call this to indicate that any comamnds that have been issued \
                 but which might be buffered should be flushed to the screen"
 		pass
 
-        def save(self, file=None, format=None):
+	def save(self, file=None, format=None):
 
-                """For backends that can be save to a file or sent to a
-                stream, create a valid file out of what's currently been
-                drawn on the canvas.  Trigger any finalization here.
-                Though some backends may allow further drawing after this call,
-                presume that this is not possible for maximum portability
+		"""For backends that can be save to a file or sent to a
+		stream, create a valid file out of what's currently been
+		drawn on the canvas.  Trigger any finalization here.
+		Though some backends may allow further drawing after this call,
+		presume that this is not possible for maximum portability
 
-                file may be either a string or a file object with a write method
-                     if left as the default, the canvas's current name will be used
+		file may be either a string or a file object with a write method
+		     if left as the default, the canvas's current name will be used
 
-                format may be used to specify the type of file format to use as
-                     well as any corresponding extension to use for the filename
-                     This is an optional argument and backends may ignore it if
-                     they only produce one file format."""
-                pass 
+		format may be used to specify the type of file format to use as
+		     well as any corresponding extension to use for the filename
+		     This is an optional argument and backends may ignore it if
+		     they only produce one file format."""
+		pass
 
-                                
-	
+
+
 	def setInfoLine(self, s):
 		"For interactive Canvases, displays the given string in the \
 		'info line' somewhere where the user can probably see it."
-		pass 
-		
+		pass
+
 	#------------ string/font info ------------
 	def stringWidth(self, s, font=None):
 		"Return the logical width of the string if it were drawn \
 		in the current font (defaults to self.font)."
-		raise NotImplementedError, 'stringWidth'
-	
+		raise NotImplementedError('stringWidth')
+
 	def fontHeight(self, font=None):
 		"Find the height of one line of text (baseline to baseline) of the given font."
 		# the following approxmation is correct for PostScript fonts,
 		# and should be close for most others:
 		if not font: font = self.defaultFont
 		return 1.2 * font.size
-		
+
 	def fontAscent(self, font=None):
 		"Find the ascent (height above base) of the given font."
-		raise NotImplementedError, 'fontAscent'
-	
+		raise NotImplementedError('fontAscent')
+
 	def fontDescent(self, font=None):
 		"Find the descent (extent below base) of the given font."
-		raise NotImplementedError, 'fontDescent'		
-		
+		raise NotImplementedError('fontDescent')
+
 	#------------- drawing helpers --------------
 
 	def arcPoints(self, x1,y1, x2,y2, startAng=0, extent=360):
-		"Return a list of points approximating the given arc."		
+		"Return a list of points approximating the given arc."
 		# Note: this implementation is simple and not particularly efficient.
 		xScale = abs((x2-x1)/2.0)
 		yScale = abs((y2-y1)/2.0)
-	
+
 		x = min(x1,x2)+xScale
 		y = min(y1,y2)+yScale
-	
+
 		# "Guesstimate" a proper number of points for the arc:
 		steps = min(max(xScale,yScale)*(extent/10.0)/10,200)
 		if steps < 5: steps = 5
-		
+
 		from math import sin, cos, pi
-	
+
 		pointlist = []
 		step = float(extent)/steps
 		angle = startAng
@@ -523,51 +523,51 @@ class Canvas:
 					 y-yScale*sin((angle/180.0)*pi))
 			pointlist.append(point)
 			angle = angle+step
-	
+
 		return pointlist
-			
+
 	def curvePoints(self, x1, y1, x2, y2, x3, y3, x4, y4):
 		"Return a list of points approximating the given Bezier curve."
-	
+
 		# Adapted from BEZGEN3.HTML, one of the many
 		# Bezier utilities found on Don Lancaster's Guru's Lair at
-		# <URL: http://www.tinaja.com/cubic01.html>	
+		# <URL: http://www.tinaja.com/cubic01.html>
 		bezierSteps = min(max(max(x1,x2,x3,x4)-min(x1,x2,x3,x3),
 		                      max(y1,y2,y3,y4)-min(y1,y2,y3,y4)),
 		                  200)
-	
+
 		dt1 = 1. / bezierSteps
 		dt2 = dt1 * dt1
 		dt3 = dt2 * dt1
-	
+
 		xx = x1
 		yy = y1
 		ux = uy = vx = vy = 0
-	
+
 		ax = x4 - 3*x3 + 3*x2 - x1
 		ay = y4 - 3*y3 + 3*y2 - y1
 		bx = 3*x3 - 6*x2 + 3*x1
 		by = 3*y3 - 6*y2 + 3*y1
 		cx = 3*x2 - 3*x1
 		cy = 3*y2 - 3*y1
-	
+
 		mx1 = ax * dt3
 		my1 = ay * dt3
-	
+
 		lx1 = bx * dt2
 		ly1 = by * dt2
-	
+
 		kx = mx1 + lx1 + cx*dt1
 		ky = my1 + ly1 + cy*dt1
-	
-		mx = 6*mx1 
+
+		mx = 6*mx1
 		my = 6*my1
-	
+
 		lx = mx + 2*lx1
 		ly = my + 2*ly1
-	
+
 		pointList = [(xx, yy)]
-	
+
 		for i in range(bezierSteps):
 			xx = xx + ux + kx
 			yy = yy + uy + ky
@@ -575,8 +575,8 @@ class Canvas:
 			uy = uy + vy + ly
 			vx = vx + mx
 			vy = vy + my
-			pointList.append((xx, yy)) 
-	
+			pointList.append((xx, yy))
+
 		return pointList
 
 	def drawMultiLineString(self, s, x,y, font=None, color=None, angle=0):
@@ -602,22 +602,22 @@ class Canvas:
 
 	def drawLine(self, x1,y1, x2,y2, color=None, width=None):
 		"Draw a straight line between x1,y1 and x2,y2."
-		raise NotImplementedError, 'drawLine'
-	
+		raise NotImplementedError('drawLine')
+
 	def drawLines(self, lineList, color=None, width=None):
 		"Draw a set of lines of uniform color and width.  \
 		lineList: a list of (x1,y1,x2,y2) line coordinates."
 		# default implementation:
 		for x1, y1, x2, y2 in lineList:
 			self.drawLine(x1, y1, x2, y2 ,color,width)
-		
+
 
 	#	For text, color defaults to self.lineColor.
-	
+
 	def drawString(self, s, x,y, font=None, color=None, angle=0):
 		"Draw a string starting at location x,y."
 		# NOTE: the baseline goes on y; drawing covers (y-ascent,y+descent)
-		raise NotImplementedError, 'drawString'
+		raise NotImplementedError('drawString')
 
 
 	#	For fillable shapes, edgeColor defaults to self.defaultLineColor,
@@ -625,7 +625,7 @@ class Canvas:
 	#	fillColor defaults to self.defaultFillColor.
 	#	Specify "don't fill" by passing fillColor=transparent.
 
-	def drawCurve(self, x1,y1, x2,y2, x3,y3, x4,y4, 
+	def drawCurve(self, x1,y1, x2,y2, x3,y3, x4,y4,
 				edgeColor=None, edgeWidth=None, fillColor=None, closed=0):
 		"Draw a Bezier curve with control points x1,y1 to x4,y4."
 
@@ -638,7 +638,7 @@ class Canvas:
 	def drawRect(self, x1,y1, x2,y2, edgeColor=None, edgeWidth=None, fillColor=None):
 		"Draw the rectangle between x1,y1, and x2,y2. \
 		These should have x1<x2 and y1<y2."
-		
+
 		pointList = [ (x1,y1), (x2,y1), (x2,y2), (x1,y2) ]
 		self.drawPolygon(pointList, edgeColor, edgeWidth, fillColor, closed=1)
 
@@ -650,10 +650,10 @@ class Canvas:
 
 		x1, x2 = min(x1,x2), max(x1, x2)
 		y1, y2 = min(y1,y2), max(y1, y2)
-		
+
 		dx = rx*2
 		dy = ry*2
-	
+
 		partList = [
 			(figureArc, x1, y1, x1+dx, y1+dy, 180, -90),
 			(figureLine, x1+rx, y1, x2-rx, y1),
@@ -680,10 +680,10 @@ class Canvas:
 		starting at startAng degrees and covering extent degrees.   Angles \
 		start with 0 to the right (+x) and increase counter-clockwise. \
 		These should have x1<x2 and y1<y2."
-		
+
 		center = (x1+x2)/2, (y1+y2)/2
 		pointlist = self.arcPoints(x1, y1, x2, y2, startAng, extent)
-		
+
 		# Fill...
 		self.drawPolygon(pointlist+[center]+[pointlist[0]],
 		         transparent, 0, fillColor)
@@ -691,36 +691,36 @@ class Canvas:
 		# Outline...
 		self.drawPolygon(pointlist, edgeColor, edgeWidth, transparent)
 
-	def drawPolygon(self, pointlist, 
+	def drawPolygon(self, pointlist,
 				edgeColor=None, edgeWidth=None, fillColor=None, closed=0):
 		"""drawPolygon(pointlist) -- draws a polygon
 		pointlist: a list of (x,y) tuples defining vertices
 		closed: if 1, adds an extra segment connecting the last point to the first
 		"""
-		raise NotImplementedError, 'drawPolygon'
-	
+		raise NotImplementedError('drawPolygon')
+
 	def drawFigure(self, partList,
 				edgeColor=None, edgeWidth=None, fillColor=None, closed=0):
 		"""drawFigure(partList) -- draws a complex figure
 		partlist: a set of lines, curves, and arcs defined by a tuple whose
 				  first element is one of figureLine, figureArc, figureCurve
 				  and whose remaining 4, 6, or 8 elements are parameters."""
-	
+
 		pointList = []
-	
+
 		for tuple in partList:
 			op = tuple[0]
 			args = list(tuple[1:])
-	
+
 			if op == figureLine:
 				pointList.extend( [args[:2], args[2:]] )
 			elif op == figureArc:
-				pointList.extend(apply(self.arcPoints,args))
+				pointList.extend(self.arcPoints(*args))
 			elif op == figureCurve:
-				pointList.extend(apply(self.curvePoints,args))
+				pointList.extend(self.curvePoints(*args))
 			else:
-				raise TypeError, "unknown figure operator: "+op
-	
+				raise TypeError("unknown figure operator: "+op)
+
 		self.drawPolygon(pointList, edgeColor, edgeWidth, fillColor, closed=closed)
 
 
@@ -729,7 +729,7 @@ class Canvas:
 	def drawImage(self, image, x1,y1, x2=None,y2=None):
 		"""Draw a PIL Image into the specified rectangle.  If x2 and y2 are
 		omitted, they are calculated from the image size."""
-		raise NotImplementedError, 'drawImage'
+		raise NotImplementedError('drawImage')
 
 
 
@@ -748,10 +748,10 @@ def getFileObject(file):
                         if hasattr(file, "write"):
                                 fileobj = file
                         else:
-                                raise 'Invalid file argument to save'
+                                raise RuntimeError('Invalid file argument to save')
         else:
-                raise 'Invalid file argument to save'
-        
+                raise RuntimeError('Invalid file argument to save')
+
         return fileobj
 
 

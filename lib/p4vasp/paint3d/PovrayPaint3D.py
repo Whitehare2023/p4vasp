@@ -1,7 +1,7 @@
 from p4vasp.matrix import Vector
 from p4vasp.paint3d.Paint3DInterface import *
 from p4vasp.paint3d.data import Frame
-from StringIO import StringIO
+from io import StringIO
 import os.path
 
 class PovrayPaint3D(Paint3DInterface):
@@ -66,7 +66,7 @@ class PovrayPaint3D(Paint3DInterface):
 }
 
 """%(str(name),self.colorvec(color)))
-    
+
     def materialRef(self,material):
         if material is None:
             return ""
@@ -171,7 +171,7 @@ Final_Clock      = %d
 Initial_Frame    = 0
 Final_Frame      = %d
 """%(int(self.clock),int(self.clock)))
- 
+
     def write(self,f):
         paint=PovrayPaint3D()
         self.play(paint)

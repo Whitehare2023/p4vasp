@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -20,7 +20,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from __future__ import generators
+
 
 #from p4vasp.graph import *
 #from p4vasp.GraphCanvas import *
@@ -89,8 +89,8 @@ class PhononDispersionApplet(GraphWindowApplet,DynaListener):
                 self.setGraphData([[]])
                 yield 1
             else:
-                print "Dyna in dispersion:"
-                print dyna.toString()
+                print("Dyna in dispersion:")
+                print((dyna.toString()))
                 dyna=dyna.withBasis(primitive_cell.basis).reciprocal()
                 steps=dyna.size
                 if len(dyna.segments)<1:

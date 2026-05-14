@@ -1,5 +1,5 @@
 """PixMapWrapper - defines the PixMapWrapper class, which wraps an opaque
-QuickDraw PixMap data structure in a handy Python class.  Also provides 
+QuickDraw PixMap data structure in a handy Python class.  Also provides
 methods to convert to/from pixel data (from, e.g., the img module) or a
 Python Imaging Library Image object.
 
@@ -77,7 +77,7 @@ class PixMapWrapper:
 			2, 5,					# cmpCount, cmpSize,
 			0, 0, 0)				# planeBytes, pmTable, pmReserved
 		self.__dict__['_pm'] = Qd.RawBitMap(self._header)
-	
+
 	def _stuff(self, element, bytes):
 		offset = _pmElemOffset[element]
 		fmt = _pmElemFormat[element]
@@ -85,7 +85,7 @@ class PixMapWrapper:
 			+ struct.pack(fmt, bytes) \
 			+ self._header[offset + struct.calcsize(fmt):]
 		self.__dict__['_pm'] = None
-	
+
 	def _unstuff(self, element):
 		offset = _pmElemOffset[element]
 		fmt = _pmElemFormat[element]
@@ -93,7 +93,7 @@ class PixMapWrapper:
 
 	def __setattr__(self, attr, val):
 		if attr == 'baseAddr':
-			raise 'UseErr', "don't assign to .baseAddr -- assign to .data instead"
+			raise RuntimeError("don't assign to .baseAddr -- assign to .data instead")
 		elif attr == 'data':
 			self.__dict__['data'] = val
 			self._stuff('baseAddr', id(self.data) + MacOS.string_id_to_buffer)
@@ -109,11 +109,11 @@ class PixMapWrapper:
 		elif attr == 'hRes' or attr == 'vRes':
 			# 16.16 fixed format, so just shift 16 bits
 			self._stuff(attr, int(val) << 16)
-		elif attr in _pmElemFormat.keys():
+		elif attr in list(_pmElemFormat.keys()):
 			# any other pm attribute -- just stuff
 			self._stuff(attr, val)
 		else:
-			self.__dict__[attr] = val	
+			self.__dict__[attr] = val
 
 	def __getattr__(self, attr):
 		if attr == 'rowBytes':
@@ -129,13 +129,13 @@ class PixMapWrapper:
 		elif attr == 'hRes' or attr == 'vRes':
 			# 16.16 fixed format, so just shift 16 bits
 			return self._unstuff(attr) >> 16
-		elif attr in _pmElemFormat.keys():
+		elif attr in list(_pmElemFormat.keys()):
 			# any other pm attribute -- just unstuff
 			return self._unstuff(attr)
 		else:
-			return self.__dict__[attr]	
+			return self.__dict__[attr]
 
-		
+
 	def PixMap(self):
 		"Return a QuickDraw PixMap corresponding to this data."
 		if not self.__dict__['_pm']:
@@ -143,7 +143,7 @@ class PixMapWrapper:
 		return self.__dict__['_pm']
 
 	def blit(self, x1=0,y1=0,x2=None,y2=None, port=None):
-		"""Draw this pixmap into the given (default current) grafport.""" 
+		"""Draw this pixmap into the given (default current) grafport."""
 		src = self.bounds
 		dest = [x1,y1,x2,y2]
 		if x2 == None:
@@ -151,7 +151,7 @@ class PixMapWrapper:
 		if y2 == None:
 			dest[3] = y1 + src[3]-src[1]
 		if not port: port = Qd.GetPort()
-		print "blit port:", port
+		print("blit port:", port)
 		Qd.CopyBits(self.PixMap(), port.portBits, src, tuple(dest),
 				QuickDraw.srcCopy, None)
 
@@ -178,7 +178,7 @@ class PixMapWrapper:
 
 		Qd.CopyBits(port.portBits, self.PixMap(), tuple(src), dest,
 				QuickDraw.srcCopy, None)
-		
+
 	def fromstring(self,s,width,height,format=imgformat.macrgb):
 		"""Stuff this pixmap with raw pixel data from a string.
 		Supply width, height, and one of the imgformat specifiers."""
@@ -186,7 +186,7 @@ class PixMapWrapper:
 		# so convert if necessary
 		if format != imgformat.macrgb and format != imgformat.macrgb16:
 			# (LATER!)
-			raise "NotImplementedError", "conversion to macrgb or macrgb16"
+			raise NotImplementedError("conversion to macrgb or macrgb16")
 		self.data = s
 		self.bounds = (0,0,width,height)
 		self.cmpCount = 3
@@ -207,13 +207,13 @@ class PixMapWrapper:
 			return self.data
 		# otherwise, convert to the requested format
 		# (LATER!)
-			raise "NotImplementedError", "data format conversion"
+		raise NotImplementedError("data format conversion")
 
 	def fromImage(self,im):
 		"""Initialize this PixMap from a PIL Image object."""
 		# We need data in ARGB format; PIL can't currently do that,
 		# but it can do RGBA, which we can use by inserting one null
-		# up frontpm = 
+		# up frontpm =
 		if im.mode != 'RGBA': im = im.convert('RGBA')
 		data = chr(0) + im.tostring()
 		self.fromstring(data, im.size[0], im.size[1])

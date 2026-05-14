@@ -12,14 +12,14 @@ artboard size is calculated to slightly bigger than the bounding box.
 
 BB 28/09/99 Added Rewrote drawEllipse, drawroundRect and drawArc to use drawBezier
 			fixed bug in name in AICanvas.__init__
-			
-			
+
+
 """
 from p4vasp.piddle.piddle import *
 import p4vasp.piddle.aigen as aigen
 import string
 import zlib
-import cStringIO
+import io
 
 from math import sin, cos, pi, ceil
 
@@ -27,7 +27,7 @@ author = 'Me'
 pageSize = (595, 842) #A4
 
 class AICanvas(Canvas):
-	"""This works by accumulating a list of strings containing 
+	"""This works by accumulating a list of strings containing
 	AI page marking operators, as you call its methods.  We could
 	use a big string but this is more efficient - only concatenate
 	it once, with control over line ends.  When
@@ -35,7 +35,7 @@ class AICanvas(Canvas):
 
 	def __init__(self, size=(0,0), name='piddle.ai'):
 		Canvas.__init__(self, size, name=name)
-		print name
+		print(name)
 		if name[-3:] == '.ai':
 			self.name = name
 		else:
@@ -44,17 +44,17 @@ class AICanvas(Canvas):
 		self._colorNames = {}
 		self.currentPageHasImages = 0
 		self.doc = aigen.AIDocument()
-		
+
 		self.pageNumber = 1   # keep a count
-		
-		# now for any default graphics settings	
+
+		# now for any default graphics settings
 		self.defaultFont=Font(face='Helvetica')
 		self.defaultLineColor = black
 		self.defaultFillColor = transparent
 		c = self._currentLineColor = self.defaultLineColor
 		self._currentFillColor = self.defaultFillColor
 		self._currentTextColor = self.defaultLineColor
-		
+
 		r,g,b = c.red, c.green, c.blue
 		w = self._currentWidth = self.defaultLineWidth
 		self._currentFont = self.defaultFont
@@ -63,7 +63,7 @@ class AICanvas(Canvas):
 		self.maxline = 1
 		self.maxx, self.minx, self.maxy, self.miny = (0,0,0,0)
 		self.boundbox = self.maxx, self.minx, self.maxy, self.miny, self.maxline
-		
+
 		self.mitre = '4.5 M'
 		self.linejoin = '0 j'
 		self.linecap = '0 J' # 0=butt, 1=round, 2=square
@@ -71,19 +71,19 @@ class AICanvas(Canvas):
 		self.winOrder = '0 D' #0=clockwise, 1=antoclockwise
 
 	#info functions - non-standard
-		
+
 	def setTitle(self):
 		self.doc.setTitle(self.name)
-		
+
 	def setPageSize(self, pageSize):
 		self.doc.setPageSize(pageSize)
-		
+
 	def setBoundingBox(self):
 		self.doc.setBoundingBox(self.boundbox)
-		
-		
-		
-	
+
+
+
+
 	def showPage(self):
 		"""This is where the fun happens"""
 		self.setTitle()
@@ -91,15 +91,15 @@ class AICanvas(Canvas):
 		self.setBoundingBox()
 		stream = self.winding + '\n' + self.winOrder
 		stream = [stream] + self.code
- 		self.doc.setPage(stream)
+		self.doc.setPage(stream)
 
 	def save(self, file=None, format=None):
 		"""Saves the file.  If holding data, do
-		a showPage() to save them having to.""" 
-		if len(self.code):  
+		a showPage() to save them having to."""
+		if len(self.code):
 			self.showPage()
 		self.doc.SaveToFile(self.name)
-		print 'saved', self.name
+		print('saved', self.name)
 
 
 
@@ -115,17 +115,17 @@ class AICanvas(Canvas):
 	def clear(self):
 		"same as ShowPage"
 		self.showPage()
-	
+
 	def flush(self):
                 pass
 
-		
+
 	def setInfoLine(self, s):
 		self.doc.setTitle(s)
-			
+
 	def setAuthor(self, name):
 		self.doc.setAuthor(name)
-	
+
 	def _bounds(self, x1, y1, x2, y2):
 #		print self.maxx, x1, x2, y1, y2
 		self.maxx = max(self.maxx, x1, x2)
@@ -142,7 +142,7 @@ class AICanvas(Canvas):
 			if  self._currentLineColor != transparent:
 				r,g,b = color.red, color.green, color.blue
 				self.code.append('%s %s %s XA' % (r,g,b))
-	 
+
 
 
 	def _updateFillColor(self, color):
@@ -152,16 +152,16 @@ class AICanvas(Canvas):
 			if  self._currentLineColor != transparent:
 				r,g,b = color.red, color.green, color.blue
 				self.code.append('%s %s %s Xa' % (r,g,b))
- 
+
 
 	def _updateLineWidth(self, width):
-		if width == None: 
+		if width == None:
 			width = self.defaultLineWidth
 		if width != self._currentWidth:
 			self.maxline = max(self.maxline, width)
 			self._currentWidth = width
 			self.code.append('%s w' % width)
-  
+
 #	def _updateFont(self, font):
 #		font = font or self.defaultFont
 #		if font != self._currentFont:
@@ -173,7 +173,7 @@ class AICanvas(Canvas):
 #
 
 	#------------ string/font info ------------
-		
+
 	def stringWidth(self, s, font=None):
 		"Return the logical width of the string if it were drawn \
 		in the current font (defaults to self.font)."
@@ -193,16 +193,16 @@ class AICanvas(Canvas):
 			font = self.defaultFont
 		fontname = self._findExternalFontName(font)
 		return pdfmetrics.ascent_descent[fontname][0] * 0.001 * font.size
-		
+
 	def fontDescent(self, font=None):
 		if not font:
 			font = self.defaultFont
 		fontname = self._findExternalFontName(font)
 		return -pdfmetrics.ascent_descent[fontname][1] * 0.001 * font.size
-	
+
 	#------------- drawing methods --------------
 
-		
+
 	def drawLine(self, x1,y1, x2,y2, color=None, width=None):
 		self._updateLineColor(color)
 		self._updateLineWidth(width)
@@ -246,7 +246,7 @@ class AICanvas(Canvas):
 #				thickness = 0.08 * fnt.size
 #				width = self.stringWidth(text, fnt)
 #				self.drawLine(x, ypos, x + width, ypos, width=thickness)
-#				
+#
 #	def drawJustifiedString(self, s, x, y, font=None, color=None, angle=0):
 #		self._updateLineColor(color)
 #		self._updateFont(font)
@@ -290,7 +290,7 @@ class AICanvas(Canvas):
 		self.code.append(x1, y1, 'm' )
 		self.code.append(x2, y2, x3, y3, x4, y4, 'c')
 		self.code.append(op + ' U')
-		
+
 	def bezierArc(self, x1,y1, x2,y2, startAng=0, extent=90):
 		"""bezierArc(x1,y1, x2,y2, startAng=0, extent=90) --> List of Bezier
 		curve control points.
@@ -339,8 +339,8 @@ class AICanvas(Canvas):
 		return pointList
 
 
-	
-	def drawArc(self, x1, y1, x2, y2, startAng=0, extent=90, edgeColor=None, 
+
+	def drawArc(self, x1, y1, x2, y2, startAng=0, extent=90, edgeColor=None,
 			edgeWidth=None, fillColor=None, closed=0):
 		self._updateFillColor(fillColor)
 		self._updateLineWidth(edgeWidth)
@@ -365,10 +365,10 @@ class AICanvas(Canvas):
 			st.append('c')
 			self.code.append(tuple(st))
 		self.code.append(op + ' U')
-			
 
 
-	def drawRect(self, x1, y1, x2, y2, edgeColor=None, 
+
+	def drawRect(self, x1, y1, x2, y2, edgeColor=None,
 			edgeWidth=None, fillColor=None, closed=0):
 		self._updateFillColor(fillColor)
 		self._updateLineWidth(edgeWidth)
@@ -428,7 +428,7 @@ class AICanvas(Canvas):
 			sl.append('l')
 #			print sl
 #			print sk
-			if i <> 0:
+			if i != 0:
 				self.code.append(tuple(sl))
 			self.code.append(tuple(sk))
 
@@ -470,14 +470,14 @@ class AICanvas(Canvas):
 		self.code.append( op + ' U')
 
 
-	def drawPolygon(self, pointlist, edgeColor=None, 
+	def drawPolygon(self, pointlist, edgeColor=None,
 			edgeWidth=None, fillColor=None, closed=0):
 		start = pointlist[0]
 		pointlist = pointlist[1:]
-		x1 = min(map(lambda (x,y) : x, pointlist))
-		x2 = max(map(lambda (x,y) : x, pointlist))
-		y1 = min(map(lambda (x,y) : y, pointlist))
-		y2 = max(map(lambda (x,y) : y, pointlist))
+		x1 = min([x_y[0] for x_y in pointlist])
+		x2 = max([x_y1[0] for x_y1 in pointlist])
+		y1 = min([x_y2[1] for x_y2 in pointlist])
+		y2 = max([x_y3[1] for x_y3 in pointlist])
 		self._updateFillColor(fillColor)
 		self._updateLineWidth(edgeWidth)
 		self._updateLineColor(edgeColor)
@@ -505,7 +505,7 @@ class AICanvas(Canvas):
 
 
 	def drawString():
-		print "Sorry Not yet impemented"
+		print("Sorry Not yet impemented")
 
 
 
@@ -524,39 +524,39 @@ def test():
 	c.drawLine(000, 400, 400, 400, cyan, 20)
 	c.drawLine(400, 400, 400, 000, yellow, 20)
 	c.drawLine(400, 000, 000, 000, black, 20)
-	
+
 	Lines = [   (100, 100, 300, 100),
 				(300, 100, 300, 300),
 				(300, 300, 100, 300),
 				(100, 300, 100, 100)  ]
 	c.drawLines(Lines, red, 10)
-##	
+##
 ##	f = Font()
 ##	f.face = 'Times'
 ##	f.bold = 1
 ##	f.size = 24
 ##
-##	c.drawString('AI PIDDLE RULES!', 
+##	c.drawString('AI PIDDLE RULES!',
 ##			100,450, font=f, angle=0, color=teal)
-##	
+##
 ##
 ##	for i in range(12):
-##		c.drawString('------AI PIDDLE RULES!', 
+##		c.drawString('------AI PIDDLE RULES!',
 ##			300,600, angle=i*15)
-##			
+##
 	#curve
 	c.drawCurve(100,500,300,500,400,600,400,800,
 			edgeColor=purple,
 			edgeWidth=1,
 			fillColor=yellow,
-			closed=1)	
+			closed=1)
 
 	#rectangle
 	c.drawRect(100,550,200,600,
 			edgeColor=purple,
 			edgeWidth=1,
 			fillColor=yellow,
-			closed=1)	
+			closed=1)
 
 	#polygon
 	c.drawPolygon([(72,72),(72,150),(80,100), (200,72), (130, 40)],
@@ -565,21 +565,21 @@ def test():
 			closed=0)
 	#arc
 	c.drawEllipse( 130,30, 200,100,
-		fillColor=green, 
+		fillColor=green,
 		edgeWidth=4 )
 #
-	c.drawArc( 130,30, 200,100, 45, 180, 
-		edgeColor=red, 
+	c.drawArc( 130,30, 200,100, 45, 180,
+		edgeColor=red,
 		edgeWidth=4 )
-		
+
 	c.drawRoundRect(0,0, 200,100, 30,30,
-		edgeColor=red, 
+		edgeColor=red,
 		edgeWidth=2 )
 
 	c.flush()
 
 
 if __name__ == '__main__':
-		test()	
+		test()
 		import sys
 		sys.exit(1)

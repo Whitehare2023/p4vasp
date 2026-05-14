@@ -31,7 +31,7 @@ FArray1D and FArray2D.
 These are the one and two dimensional arrays of real numbers (double).
 """
 
-from UserList import *
+from collections import *
 from string import *
 from p4vasp.cmatrix import *
 import cp4vasp
@@ -55,9 +55,9 @@ class FArray1D(cp4vasp.FArray1D):
     def getVector(self):
         return Vector(pointer=self.cloneBuff())
     def __str__(self):
-        return "["+join(map(lambda x:"%+14.10f"%x,self),",")+"]"
+        return "["+join(["%+14.10f"%x for x in self],",")+"]"
     def __repr__(self):
-        return "FArray1D(["+join(map(lambda x:"%+14.10f"%x,self),",")+"])"
+        return "FArray1D(["+join(["%+14.10f"%x for x in self],",")+"])"
 
 
 class FArray2D(cp4vasp.FArray2D):
@@ -85,6 +85,6 @@ class FArray2D(cp4vasp.FArray2D):
     def getVector(self,i):
         return Vector(pointer=self.cloneVector(i))
     def __str__(self):
-        return "[\n"+join(map(lambda x:"  "+str(x),self),",\n")+"]"
+        return "[\n"+join(["  "+str(x) for x in self],",\n")+"]"
     def __repr__(self):
         return "FArray2D(%d,%d,%s)"%(self.sizeX(),self.sizeY(),str(self))

@@ -54,7 +54,7 @@
     Py_INCREF($result);
   }
   else{
-    $result=PyString_FromStringAndSize($1,ODP_strlen($1));
+    $result=PyUnicode_FromStringAndSize($1,ODP_strlen($1));
   }
 }
 

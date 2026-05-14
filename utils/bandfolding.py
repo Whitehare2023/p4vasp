@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
 #  (see http://cms.mpi.univie.ac.at/vasp/Welcome.html)
@@ -31,11 +31,11 @@ kpoints=None
 ev=s.EIGENVALUES
 e=s.E_FERMI
 divisions=s.KPOINT_DIVISIONS
-print "Divisions:",divisions
+print(("Divisions:",divisions))
 
 
 if (e is None):
-    print "Reading E_FERMI from DOSCAR"
+    print("Reading E_FERMI from DOSCAR")
     d=open("DOSCAR","r")
     d.readline()
     d.readline()
@@ -43,7 +43,7 @@ if (e is None):
     d.readline()
     d.readline()
     e=float(split(d.readline())[3])
-    print "E_FERMI=",e
+    print(("E_FERMI=",e))
     d.close()
 
 ly=len(ev[0][0])

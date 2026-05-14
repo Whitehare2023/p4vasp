@@ -22,13 +22,13 @@ recip
 0.000    0.000    0.000
 '&1G'    0.00
 """)
-        self.assertEquals(d.comment,"graphite")
-        self.assertEquals(d.isReciprocal(),True)
-        self.assertEquals(d.size,51)
-        self.assertEquals(len(d.segments),4)
-        self.assertEquals(len(d.labels),4)
-        self.assertEquals(d.labels,[['A',''],['&1G',''],['M',''],['K','&1G']])
-        self.assertEquals(d.segments[0],(Vector(0.0,0.0,0.5),Vector(0.0,0.0,0.0)))
+        self.assertEqual(d.comment,"graphite")
+        self.assertEqual(d.isReciprocal(),True)
+        self.assertEqual(d.size,51)
+        self.assertEqual(len(d.segments),4)
+        self.assertEqual(len(d.labels),4)
+        self.assertEqual(d.labels,[['A',''],['&1G',''],['M',''],['K','&1G']])
+        self.assertEqual(d.segments[0],(Vector(0.0,0.0,0.5),Vector(0.0,0.0,0.0)))
 
     def testReciprocal(self):
         d=Dyna()
@@ -42,9 +42,9 @@ Cartesian
 0.050    0.000    0.100
 'W'    0.00
 """)
-        self.assertEquals(d.isCartesian(),True)
+        self.assertEqual(d.isCartesian(),True)
         recip=d.withBasis([Vector(0,a/2,a/2),Vector(a/2,0,a/2),Vector(a/2,a/2,0)]).reciprocal()
-        self.assertEquals(recip.segments[0],(Vector(0.5,0.5,0.0),Vector(0.5,0.75,0.25)))
+        self.assertEqual(recip.segments[0],(Vector(0.5,0.5,0.0),Vector(0.5,0.75,0.25)))
 
     def testCartesian(self):
         d=Dyna()
@@ -58,12 +58,12 @@ Reciprocal
 0.500    0.750    0.250
 'W'    0.00
 """)
-        self.assertEquals(d.isCartesian(),False)
+        self.assertEqual(d.isCartesian(),False)
         recip=d.withBasis([Vector(0,a/2,a/2),Vector(a/2,0,a/2),Vector(a/2,a/2,0)]).reciprocal()
-        self.assertEquals(recip.segments[0],(Vector(0.5,0.5,0.0),Vector(0.5,0.75,0.25)))
+        self.assertEqual(recip.segments[0],(Vector(0.5,0.5,0.0),Vector(0.5,0.75,0.25)))
         cart=d.withBasis([Vector(0,a/2,a/2),Vector(a/2,0,a/2),Vector(a/2,a/2,0)]).cartesian()
-        self.assertEquals((cart.segments[0][0]-Vector(0.0,0.0,1.0/a)).length()<0.001,True)
-        self.assertEquals((cart.segments[0][1]-Vector(0.5/a,0.0,1.0/a)).length()<0.001,True)
+        self.assertEqual((cart.segments[0][0]-Vector(0.0,0.0,1.0/a)).length()<0.001,True)
+        self.assertEqual((cart.segments[0][1]-Vector(0.5/a,0.0,1.0/a)).length()<0.001,True)
     def testPointsAlongPath(self):
         d=Dyna()
         d.parse("""graphite
@@ -84,13 +84,13 @@ recip
 0.000    0.000    0.000
 '&1G'    0.00
 """)
-        self.assertEquals(d.isReciprocal(),True)
-        self.assertEquals(d.size,51)
+        self.assertEqual(d.isReciprocal(),True)
+        self.assertEqual(d.size,51)
         p=list(d.pointsAlongPath(3))
-        self.assertEquals(len(p),12)
-        self.assertEquals(p[0],Vector(0,0,0.5))
-        self.assertEquals(p[1],Vector(0,0,0.25))
-        self.assertEquals(p[2],Vector(0,0,0.0))
+        self.assertEqual(len(p),12)
+        self.assertEqual(p[0],Vector(0,0,0.5))
+        self.assertEqual(p[1],Vector(0,0,0.25))
+        self.assertEqual(p[2],Vector(0,0,0.0))
 
     def testPointsAlongPathWithDistanceAndLabel(self):
         d=Dyna()
@@ -113,13 +113,13 @@ recip
 '&1G'    0.00
 """)
         p=list(d.pointsAlongPathWithDistanceAndLabel(3))
-        self.assertEquals(len(p),12)
-        self.assertEquals(p[0],(Vector(0,0,0.5),0.0,"A"))
-        self.assertEquals(p[1],(Vector(0,0,0.25),0.25,None))
-        self.assertEquals(p[2],(Vector(0,0,0.0),0.5,None))
-        self.assertEquals(p[3],(Vector(0,0,0.0),0.5,"&1G"))
-        self.assertEquals(p[11][0],Vector(0,0,0.0))
-        self.assertEquals(p[11][2],"&1G")
+        self.assertEqual(len(p),12)
+        self.assertEqual(p[0],(Vector(0,0,0.5),0.0,"A"))
+        self.assertEqual(p[1],(Vector(0,0,0.25),0.25,None))
+        self.assertEqual(p[2],(Vector(0,0,0.0),0.5,None))
+        self.assertEqual(p[3],(Vector(0,0,0.0),0.5,"&1G"))
+        self.assertEqual(p[11][0],Vector(0,0,0.0))
+        self.assertEqual(p[11][2],"&1G")
 
 
 if __name__ == '__main__':

@@ -41,19 +41,21 @@ of arrays:
 
 """
 
-from UserDict import *
-from UserList import *
+from collections import UserDict, UserList
+from collections import *
 from string import *
 from sys import *
 from p4vasp.matrix import *
 from p4vasp import *
 from p4vasp.util import *
 from types import *
+import sys
+from functools import reduce
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 
 class LateList:
@@ -74,7 +76,7 @@ class LateList:
         if i in self.available:
             return self.data[i]
         if (i<0) or (i>=l):
-            raise IndexError,"list index out of range; len=%s index=%s"%(str(l),str(i))
+            raise IndexError("list index out of range; len=%s index=%s"%(str(l),str(i)))
         self.data[i]=self.parse(self.plist[i])
         self.available.append(i)
         return self.data[i]
@@ -100,7 +102,7 @@ class TopArray(UserList,ToXMLHelper):
         if self.type in [FLOAT_TYPE,INT_TYPE,LOGICAL_TYPE]:
             can_convert=1
         elif (type(self.type in (ListType,TupleType))) or isinstance(self.type,UserList):
-            v=map(lambda x:x in [FLOAT_TYPE,INT_TYPE,LOGICAL_TYPE],self.type)
+            v=[x in [FLOAT_TYPE,INT_TYPE,LOGICAL_TYPE] for x in self.type]
             if reduce(lambda x,y: x and y, v):
                 can_convert=1
 
@@ -400,8 +402,8 @@ class Array(TopArray):
         if isinstance(data,Array):
             self.name      = data.name
             self.element   = data.element
-            self.field     = map(intern,data.field)
-            self.type      = map(intern,data.type)
+            self.field     = list(map(intern,data.field))
+            self.type      = list(map(intern,data.type))
             self.format    = data.format[:]
             self.dimension = data.dimension[:]
             self.rcmode    = data.rcmode
@@ -436,16 +438,16 @@ class Array(TopArray):
         self.type=[]
         self.field=[]
 
-        self.dimension =map(getTextFromElement,getChildrenByTagName(data,"dimension"))
-        self.field     =map(lambda x:intern(strip(getTextFromElement(x))),getChildrenByTagName(data,"field"))
-        self.type=map(getTypeFromElement,getChildrenByTagName(data,"field"))
+        self.dimension =list(map(getTextFromElement,getChildrenByTagName(data,"dimension")))
+        self.field     =[sys.intern(strip(getTextFromElement(x))) for x in getChildrenByTagName(data,"field")]
+        self.type=list(map(getTypeFromElement,getChildrenByTagName(data,"field")))
         self.defaultFormat()
 
         self.data=self.resolveSet(data,len(self.dimension),late,fastflag)[0]
 
     def defaultFormat(self):
         """Reset *format* to default formats for particular types."""
-        self.format=map(self.getDefaultFormat,self.type)
+        self.format=list(map(self.getDefaultFormat,self.type))
 
     def fieldIndex(self,field):
         """Get index of *field* in record or *None* if not in *self.field* ."""
@@ -502,11 +504,11 @@ class Array(TopArray):
         records=getChildrenByTagName(e,"r")
         if len(records):
             self.rcmode=0
-            return map(self.resolveRecordElement,records)
+            return list(map(self.resolveRecordElement,records))
         else:
             self.rcmode=1
             records=getChildrenByTagName(e,"rc")
-            return map(self.resolveRecordColumnedElement,records)
+            return list(map(self.resolveRecordColumnedElement,records))
 
     def resolveRecordSet_F(self,e):
         """Internal function used for parsing a <set> node *e* containing <r> or <rc> nodes .
@@ -538,7 +540,7 @@ class Array(TopArray):
         return self.retypeRecord(split(getTextFromElement(e)))
     def resolveRecordColumnedElement(self,e):
         """Internal function used for parsing a <rc> node *e* ."""
-        r=map(getTextFromElement,getChildrenByTagName(e,"c"))
+        r=list(map(getTextFromElement,getChildrenByTagName(e,"c")))
         return self.retypeRecord(r)
 
     def getRecord(self,*arg):
@@ -644,9 +646,9 @@ class Array(TopArray):
     def addFieldIntoSet(self,set,value,level):
         "Internal function used to add a field into set. Uset by *addField()* ."
         if level>1:
-            return map(lambda x,s=self,v=value,l=level-1:s.addFieldIntoSet(x,v,l),set)
+            return list(map(lambda x,s=self,v=value,l=level-1:s.addFieldIntoSet(x,v,l),set))
         elif level==1:
-            v=map(list,set)
+            v=list(map(list,set))
             for x in v:
                 x.append(value)
             return v
@@ -655,7 +657,7 @@ class Array(TopArray):
             v.append(value)
             return v
         else:
-            raise "Illegal level :%s"%str(level)
+            raise RuntimeError("Illegal level :%s"%str(level))
 
     def addField(self,field,t=FLOAT_TYPE,format=None,value=None):
         """Add a new *field* of type *t* (optional).
@@ -684,11 +686,11 @@ class Array(TopArray):
         *removeFields()* ,*removeField()* and *setupFields()* .
         """
         if level>0:
-            return map(lambda x,s=self,i=indexes,l=level-1:s.arrangeSet(x,i,l),set)
+            return list(map(lambda x,s=self,i=indexes,l=level-1:s.arrangeSet(x,i,l),set))
         elif level==0:
-            return map(lambda x,r=set:r[x],indexes)
+            return list(map(lambda x,r=set:r[x],indexes))
         else:
-            raise "Illegal level :%s"%str(level)
+            raise RuntimeError("Illegal level :%s"%str(level))
 
 
     def removeFields(self,fields):
@@ -734,7 +736,7 @@ class Array(TopArray):
                 fldindex=self.field.index(fields[i])
                 types[i]  =self.type[fldindex]
         if formats is None:
-            formats=map(self.getDefaultFormat,types)
+            formats=list(map(self.getDefaultFormat,types))
             for i in range(0,len(fields)):
                 if (fields[i] in self.field):
                     fldindex=self.field.index(fields[i])

@@ -66,7 +66,7 @@
 #  ifdef SIMPLE_EXCEPTIONS
 %exception {
   try{
-    $function
+    $action
   }
   catch(exception &e){
     PyErr_SetString(PyExc_Exception,e.what());
@@ -76,7 +76,7 @@
 #else
 %exception {
   try{
-    $function
+    $action
   }
   catch(DOMException &e){
     throwPythonDOMException(e.code,e.what());
@@ -143,7 +143,7 @@
     Py_INCREF($result);
   }
   else{
-    $result=PyString_FromStringAndSize($1,ODP_strlen($1));
+    $result=PyUnicode_FromStringAndSize($1,ODP_strlen($1));
   }
 }
 

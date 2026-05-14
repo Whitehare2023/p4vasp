@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #
 # HappyDoc:docStringFormat='ClassicStructuredText'
 #
@@ -29,31 +29,31 @@ This module contains various utilities and functions that do not fit
 into other modules.
 """
 
-from UserDict import *
-from UserList import *
+from collections import UserDict, UserList
+from collections import *
 from string import *
 from sys import *
-from matrix import *
+from .matrix import *
 from p4vasp import *
 from types import *
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 try:
     import p4vasp.ODPdom as ODPdom
     use_odpdom=2
 except:
     try:
-        import ODPdom
+        from . import ODPdom
         use_odpdom=1
     except:
         try:
             import xml.dom.minidom
         except:
-            print "There is neither ODPdom, nor xml.dom.minidom."
+            print("There is neither ODPdom, nor xml.dom.minidom.")
         use_odpdom=0
 #use_odpdom=0
 
@@ -92,7 +92,7 @@ def indent(s,istring):
     """
     if type(istring) is IntType:
         istring=istring*INDENT
-    return join(map(lambda x,i=istring:i+x, split(s,"\n")),"\n")
+    return join(list(map(lambda x,i=istring:i+x, split(s,"\n"))),"\n")
 
 
 class Parseable:
@@ -106,7 +106,7 @@ class Parseable:
         self.read(sio)
         sio.close()
     def read(self,f):
-        raise "read() method not implemented"
+        raise RuntimeError("read() method not implemented")
 
 class ToString:
     """Defines the *toString* method as a wrapper to *write*."""
@@ -167,13 +167,13 @@ def retypeVec(x,t):
     This is the same as *retype()* function applied to all elements of *x*.
     """
     if t==FLOAT_TYPE:
-        return map(float,x)
+        return list(map(float,x))
     elif t==STRING_TYPE:
-        return map(str,x)
+        return list(map(str,x))
     elif t==INT_TYPE:
-        return map(int,x)
+        return list(map(int,x))
     elif t==LOGICAL_TYPE:
-        return map(lambda xx:(xx[0] in ["T","1","Y"]) or (xx==".TRUE."), map(upper,map(str,x)))
+        return [(xx[0] in ["T","1","Y"]) or (xx==".TRUE.") for xx in list(map(upper,list(map(str,x))))]
     else:
         raise UnknownType(t)
 
@@ -214,12 +214,12 @@ def xmlrepr(x,t=FLOAT_TYPE,format=None,float_format=None,string_format=None,logi
             format=int_format
     if format:
         if isArray(x):
-            l=map(lambda a,f=format:f%a,x)
+            l=list(map(lambda a,f=format:f%a,x))
             return join(l)
         return format%x
     else:
         if isArray(x):
-            l=map(str,x)
+            l=list(map(str,x))
             return join(l)
         return str(x)
 
@@ -239,7 +239,7 @@ def getChildrenByTagName(elem,tag,name=None):
         r=ODPdom.ChildrenByTagNameList(elem,tag)
         if name:
 #      print "return filtered ODPdom.ChildrenByTagNameList"
-            return filter(lambda x,name=name:x.getAttribute("name")==name,r)
+            return list(filter(lambda x,name=name:x.getAttribute("name")==name,r))
         else:
             return r
     except:
@@ -250,7 +250,7 @@ def getChildrenByTagName(elem,tag,name=None):
                                          (x.getAttribute("name")==name)
         else:
             f=lambda x,tag=tag:(x.nodeName==tag) and (x.nodeType==x.ELEMENT_NODE)
-        return filter(f,elem.childNodes)
+        return list(filter(f,elem.childNodes))
 
 def getInheritedElementsByTagName(elem,tag,name=None):
     """
@@ -270,7 +270,7 @@ def getTextFromElement(elem):
   joined as one string.
   Note: The returntype is the ordinary string, not unicode."""
     f=lambda x:x.nodeType in [x.TEXT_NODE,x.CDATA_SECTION_NODE]
-    return join(map(lambda x:str(x.data),filter(f,elem.childNodes)),"")
+    return join([str(x.data) for x in list(filter(f,elem.childNodes))],"")
 
 def getTypeFromElement(elem):
     """Extracts the type from "type" attribute of elem and returns the type:
@@ -427,7 +427,7 @@ def parseXML(path):
     """
     import os.path
     if not os.path.exists(path):
-        raise IOError,"No such file or directory: '%s'"%path
+        raise IOError("No such file or directory: '%s'"%path)
     if use_odpdom:
         return ODPdom.parseFile(path)
     else:
@@ -455,11 +455,11 @@ def parseXMLString(txt):
         return xml.dom.minidom.parseString(txt)
 
 def parseXMLfromURL(url):
-    import urllib
+    import urllib.request, urllib.parse, urllib.error
     if ":" not in url:
         return parseXML(url)
     if url[:5]=="http:" or url[:4]=="ftp:":
-        f=urllib.urlopen(url)
+        f=urllib.request.urlopen(url)
         s=f.read()
         f.close()
         return parseXMLString(s)
@@ -469,12 +469,12 @@ def parseXMLfromURL(url):
         return parseXML(url)
 
 def getDirFromURL(url):
-    import urlparse
+    import urllib.parse
     import os.path
     import os
     if url[:5]=="http:" or url[:4]=="ftp:":
-        scheme,address,path,param,query,fragment=urlparse.urlparse(url)
-        return urlparse.urlunparse((scheme,address,join(split(path,"/")[:-1],"/")+"/","",""))
+        scheme,address,path,param,query,fragment=urllib.parse.urlparse(url)
+        return urllib.parse.urlunparse((scheme,address,join(split(path,"/")[:-1],"/")+"/","",""))
     else:
         s=os.path.dirname(url)
         if len(s)!=0:

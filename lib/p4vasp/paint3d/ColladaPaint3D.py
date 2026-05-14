@@ -65,7 +65,7 @@ class ColladaGeometriesPaint3D(Paint3DInterface):
               <input semantic="NORMAL" source="#Mesh-%s-mesh-normals" offset="1"/>
     """%(str(name),str(name)))
 
-        self.f.write("""          <vcount>%s</vcount>\n"""%(" ".join(map(lambda x:str(len(x)),triangles))))
+        self.f.write("""          <vcount>%s</vcount>\n"""%(" ".join([str(len(x)) for x in triangles])))
         self.f.write("""          <p>""")
         for v in triangles:
             for w in v:
@@ -390,7 +390,7 @@ class ColladaPaint3D(Paint3DRecorder):
 
 if __name__ == '__main__':
     from math import *
-    from MeshTools import *
+    from .MeshTools import *
     p=ColladaPaint3D()
 
     p.ambientLight((0.1,0.1,1))

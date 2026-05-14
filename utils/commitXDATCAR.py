@@ -17,7 +17,7 @@ db.addRecord(keywords="MD,XDATCAR",name=s.comment)
 step=0
 while 1:
     for i in range(len(s)):
-        s[i]=map(float,f.readline().split())
+        s[i]=list(map(float,f.readline().split()))
     step+=1
     #s.write(stdout)
     db.storeStructure(s,step)

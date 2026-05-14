@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #
 # HappyDoc:docStringFormat='ClassicStructuredText'
 #
@@ -28,7 +28,7 @@
 SQLSystemPM - access to the data stored in a SQL database
 """
 
-from __future__ import generators
+
 
 from p4vasp import *
 from p4vasp.util import *
@@ -147,7 +147,7 @@ class SQLSystemPM(SystemPM):
           "WHERE calc_id=%d%s"%(self.Id,cond)):
             if value is None:
                 value=textvalue
-            if type(value) not in (type(""),type(u"")):
+            if type(value) not in (type(""),type("")):
                 msg().error("Reading INCAR from a SQL database: unexpected type of %s"%name)
                 continue
             try:
@@ -226,24 +226,24 @@ class SQLSystemPM(SystemPM):
         spins.sort()
         if spins[0]<0:
             spins.reverse()
-        sorbitals=map(intern,["s","p","px","py","pz","d","dxy","dyz","dxz","dz2","dx2","f",
-                           "f1","f2","f3","f4","f5","f6","f7"])
+        sorbitals=list(map(intern,["s","p","px","py","pz","d","dxy","dyz","dxz","dz2","dx2","f",
+                           "f1","f2","f3","f4","f5","f6","f7"]))
         for x in orbitals[:]:
             if x not in sorbitals:
                 orbitals.remove(x)
-        orbitals=map(lambda x,so=sorbitals:(so.index(x),str(x)),orbitals)
+        orbitals=list(map(lambda x,so=sorbitals:(so.index(x),str(x)),orbitals))
         orbitals.sort()
-        orbitals=map(lambda x:x[1],orbitals)
+        orbitals=[x[1] for x in orbitals]
         a.field=["energy"]+orbitals
         a.type =len(a.field)*[FLOAT_TYPE]
         a.defaultFormat()
         a.dimension=["gridpoints","spin","ion"]
         a.data=[]
-        for ion in xrange(ions+1):
+        for ion in range(ions+1):
             il=[]
-            for spin in xrange(len(spins)):
+            for spin in range(len(spins)):
                 sl=[]
-                for g in xrange(len(energies)):
+                for g in range(len(energies)):
                     sl.append([energies[g]]+[0.0]*len(orbitals))
                 il.append(sl)
             a.data.append(il)

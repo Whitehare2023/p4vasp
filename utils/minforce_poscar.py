@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
 #  (see http://cms.mpi.univie.ac.at/vasp/Welcome.html)
@@ -20,21 +20,22 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from p4vasp.SystemPM import *
+from functools import reduce
 s=XMLSystemPM('vasprun.xml')
 forces=s.FORCES_SEQUENCE
 avgf=[]
 maxf=[]
 if forces is not None:
     for i in range(len(forces)):
-        f=filter(lambda x:len(x)==3,forces[i])
-        f=map(lambda x:sqrt(x[0]*x[0]+x[1]*x[1]+x[2]*x[2]),f)
+        f=[x for x in forces[i] if len(x)==3]
+        f=[sqrt(x[0]*x[0]+x[1]*x[1]+x[2]*x[2]) for x in f]
         maxf.append((max(f),i))
         avgf.append((float(reduce(lambda x,y:x+y,f))/len(f),i))
 
 minavgforce, minavgindex= min(avgf)
 minmaxforce, minmaxindex= min(maxf)
-print "Minimal average: step %3d average force %+14.10f, maximal force %+14.10f"%(minavgindex,minavgforce,maxf[minavgindex][0])
-print "Minimal maximum: step %3d average force %+14.10f, maximal force %+14.10f"%(minmaxindex,avgf[minmaxindex][0],minmaxforce)
+print(("Minimal average: step %3d average force %+14.10f, maximal force %+14.10f"%(minavgindex,minavgforce,maxf[minavgindex][0])))
+print(("Minimal maximum: step %3d average force %+14.10f, maximal force %+14.10f"%(minmaxindex,avgf[minmaxindex][0],minmaxforce)))
 
 pseq=s.STRUCTURE_SEQUENCE_L
 pa=pseq[minavgindex]

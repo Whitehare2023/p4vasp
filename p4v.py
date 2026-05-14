@@ -1,12 +1,12 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # Copyright (C) 2003 Orest Dubay <orest.dubay@univie.ac.at>
 
-from __future__ import generators
+
 
 
 def get_gtk():
-    print """You need to get version 2.0 (or later) of PyGTK for this to work. You
-             can get source code from http://www.pygtk.org """
+    print("""You need to get version 2.0 (or later) of PyGTK for this to work. You
+             can get source code from http://www.pygtk.org """)
     raise SystemExit
 
 try:
@@ -86,7 +86,7 @@ class FrameMessageDriver(p4vasp.message.MessageDriver):
 
     def message(self,txt):
         if self.consoleout:
-            print txt
+            print(txt)
         self.logfile.write("MSG   :%s\n"%p4vasp.message.indent(txt,"       "))
         self.logfile.flush()
 
@@ -99,7 +99,7 @@ class FrameMessageDriver(p4vasp.message.MessageDriver):
         dialog.destroy()
 
     def confirm_error(self,txt):
-        print "Error:",txt
+        print(("Error:",txt))
         self.logfile.write("CERR  :%s\n"%p4vasp.message.indent(txt,"       "))
         self.logfile.flush()
         dialog=gtk.MessageDialog(None,gtk.DIALOG_DESTROY_WITH_PARENT,
@@ -294,9 +294,9 @@ class Frame(SystemListListener):
             applets().activate(self.embedded_applet)
 
     def on_show_applet(self,*arg):
-        print "on_show_applet",arg
+        print(("on_show_applet",arg))
     def on_ext_applet(self,*arg):
-        print "on_ext_applet",arg
+        print(("on_ext_applet",arg))
 
     def createSubmenus(self,l):
         i=gtk.MenuItem(l[0])
@@ -637,7 +637,7 @@ def getSelectionFromVisStructureDrawer(d):
 
 def idle_func():
     global vbequeue
-    scheduler().next()
+    next(scheduler())
     selection_types=(cp4vasp.BE_SELECTED,cp4vasp.BE_DESELECTED)
     time.sleep(0.005)
     while vbequeue.current() is not None:
@@ -657,7 +657,7 @@ def idle_func():
             if w is not None:
                 if w.this is not None:
                     try:
-                        x=filter(lambda x,s=w.this:x.getWindowPtr()==s,applets())[0]
+                        x=list(filter(lambda x,s=w.this:x.getWindowPtr()==s,applets()))[0]
                         x.destroyApplet()
                     except:
                         msg().exception()

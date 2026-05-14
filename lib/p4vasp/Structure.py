@@ -23,8 +23,8 @@
 
 
 
-from UserDict import *
-from UserList import *
+from collections import UserDict, UserList
+from collections import *
 from string import *
 from sys import *
 from p4vasp.matrix import *
@@ -32,12 +32,13 @@ from p4vasp import *
 from p4vasp.util import *
 from p4vasp.Dictionary import *
 from p4vasp.Array import *
+from functools import reduce
 
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 class AtomtypesRecord(ArrayRecord):
     """This is an ArrayRecord adapted to handle atomtypes more effectively.
@@ -78,7 +79,7 @@ class AtomtypesRecord(ArrayRecord):
 #    elif isinstance(init,cp4vasp.AtomtypesRecord):
 #      cp4vaspc.AtomtypesRecord_setAtomtypesRecord(self,a)
         else:
-            raise TypeError,a
+            raise TypeError(a)
 
     def getPPType(self):
         try:
@@ -275,7 +276,7 @@ class AtomtypesArray(Array):
     def allocate(self,i):
         """Allocate space for *i* number of fields. This erases all data."""
         r=AtomtypesRecord(self)
-        self.data=map(lambda x:x[:],[r.getRecord()]*i)
+        self.data=[x[:] for x in [r.getRecord()]*i]
 
     def setFieldContent(self,field,l):
         """Set content of one *field* (specified by field name or index),
@@ -358,7 +359,7 @@ class AtomInfo(ToXMLHelper):
           * xml element - creates *AtomInfo* from xml element node.
         """
         self.atomtypes=AtomtypesArray()
-        if init:
+        if init is not None:
             if type(init) is IntType:
                 self.allocate(init)
             elif type(init) in StringTypes:
@@ -378,7 +379,7 @@ class AtomInfo(ToXMLHelper):
         if name=="types":
             return len(self.atomtypes)
         elif name=="atomspertype":
-            return map(lambda x,i=self.atomtypes.field.index("atomspertype"):x[i],self.atomtypes.data)
+            return list(map(lambda x,i=self.atomtypes.field.index("atomspertype"):x[i],self.atomtypes.data))
         elif name=="Natoms":
             return reduce(lambda x,y:x+y,self.atomspertype)
         if name=="default_record":
@@ -454,7 +455,7 @@ class AtomInfo(ToXMLHelper):
             elif x=="atomtype":
                 a.type.append(INT_TYPE)
             else:
-                raise "Unknown field '%s'."%x
+                raise RuntimeError("Unknown field '%s'."%x)
         for i in range(0,self.Natoms):
             r=ArrayRecord(a)
             ai=self.speciesIndex(i)
@@ -471,7 +472,7 @@ class AtomInfo(ToXMLHelper):
         """Reduce the number all atom types by given factor.
     This can be used e.g. when reducing a supercell atominfo to a primitive cell."""
         for i in range(len(self)):
-            self[i].atomspertype=self[i].atomspertype/factor
+            self[i].atomspertype=self[i].atomspertype//factor
 
     def writexml(self,f,indent=0,extended=0):
         """Write in xml representation to a file *f*, indented by *indent* (integer).
@@ -482,7 +483,7 @@ class AtomInfo(ToXMLHelper):
         f.write('%s<atominfo>\n'%in0)
         if extended:
             f.write('%s<atoms> %d </atoms>\n'%(in1,self.Natoms))
-            f.write('%s<types> %s </types>\n'%(in1,join(map(str,self.atomspertype))))
+            f.write('%s<types> %s </types>\n'%(in1,join(list(map(str,self.atomspertype)))))
             a=self.createAtomsArray()
             a.format=["%2s","%3d"]
             a.name="atoms"
@@ -717,7 +718,7 @@ class Structure(ToXMLHelper,Parseable,ToString):
         self.comment    = removeNewline(f.readline())
         s = removeNewline(f.readline())
         try:
-            self.scaling    = map(float,split(s))
+            self.scaling    = list(map(float,split(s)))
         except:
             raise ParseException('Error reading scaling factor(s). ("%s")' % s)
 
@@ -740,7 +741,7 @@ class Structure(ToXMLHelper,Parseable,ToString):
 
             s = removeNewline(f.readline())
             try:
-                atomspertype = map(int,split(s))
+                atomspertype = list(map(int,split(s)))
                 if len(atomspertype)!=len(self.info):
                     self.info.allocate(len(atomspertype))
                 self.info.setFieldContent("atomspertype",atomspertype)
@@ -750,7 +751,7 @@ class Structure(ToXMLHelper,Parseable,ToString):
             if len(strip(s))==0:
                 s = removeNewline(f.readline())
 #      try:
-            atomspertype = map(int,split(s))
+            atomspertype = list(map(int,split(s)))
             if len(atomspertype)!=len(self.info):
                 self.info.allocate(len(atomspertype))
             self.info.setFieldContent("atomspertype",atomspertype)
@@ -795,7 +796,7 @@ class Structure(ToXMLHelper,Parseable,ToString):
 
                 if self.isSelective():
                     try:
-                        self.selective.append(map(lambda x:upper(x) in ('T','.TRUE.'),s[3:6]))
+                        self.selective.append([upper(x) in ('T','.TRUE.') for x in s[3:6]])
                     except:
                         raise ParseException('Error parsing selection on coordinate line %d.(%s)'%(cl,line))
 
@@ -811,7 +812,7 @@ class Structure(ToXMLHelper,Parseable,ToString):
             f.write(removeNewline(self.comment)+"\n")
         else:
             f.write("unknown system\n")
-        f.write("%s\n"%join(map(str,self.scaling)," "))
+        f.write("%s\n"%join(list(map(str,self.scaling))," "))
 
         kv = self.basis
         f.write(str(kv[0])+"\n")
@@ -827,7 +828,7 @@ class Structure(ToXMLHelper,Parseable,ToString):
                     f.write(elems+"\n")
             except:
                 msg().exception()
-        f.write(" "+join(map(str,self.atomspertype))+"\n")
+        f.write(" "+join(list(map(str,self.atomspertype)))+"\n")
         if (self.isSelective()):
             f.write("Selective\n")
 
@@ -894,7 +895,7 @@ class Structure(ToXMLHelper,Parseable,ToString):
         """Extends positions with the list *l* .
     List is converted to a listo of *Vector* s if necessary.
     """
-        self.positions.extend(map(Vector,l))
+        self.positions.extend(list(map(Vector,l)))
         for i in range(0,len(self.positions)-len(self.selective)):
             self.selective.append([0,0,0])
 
@@ -1043,7 +1044,7 @@ class Structure(ToXMLHelper,Parseable,ToString):
         """Adds *v* to all (when *selection* is *None* )
     or specified (by the list of indexes in *selection* ) coordinates."""
         if selection is None:
-            selection=range(0,len(self))
+            selection=list(range(0,len(self)))
         for i in selection:
             self[i] = self[i]+v
 
@@ -1051,7 +1052,7 @@ class Structure(ToXMLHelper,Parseable,ToString):
         """Multiplies all (when *selection* is *None* )
     or specified (by the list of indexes in *selection* ) coordinates with matrix *m* ."""
         if selection is None:
-            selection=range(0,len(self))
+            selection=list(range(0,len(self)))
         for i in selection:
             self[i] = m*self[i]
 
@@ -1064,7 +1065,7 @@ class Structure(ToXMLHelper,Parseable,ToString):
     Note: This will affect the geometry differently in direct than in cartesian coordinates.
         """
         if selection is None:
-            selection=range(0,len(self))
+            selection=list(range(0,len(self)))
         for i in selection:
             self[i] = Vector(x*self[i][0],y*self[i][1],z*self[i][2])
 
@@ -1360,9 +1361,8 @@ class Structure(ToXMLHelper,Parseable,ToString):
     (see p4vasp.sellang).
     This is the similar to remove(select).
         """
-        import types
-        import sellang
-        if type(select) == types.StringType:
+        from . import sellang
+        if type(select) is str:
             select=sellang.decode(select,self)
         pos   = VArray(name="positions")
         for i in range(len(self)):
@@ -1399,11 +1399,10 @@ class Structure(ToXMLHelper,Parseable,ToString):
     (see p4vasp.sellang).
     This is the similar to keepOnly(select).
         """
-        import types
-        import sellang
-        if type(select)==types.IntType:
+        from . import sellang
+        if type(select)==int:
             select=[select]
-        elif type(select)==types.StringType:
+        elif type(select) is str:
             select=sellang.decode(select,self)
         pos   = VArray(name="positions")
         for i in range(len(self)):
@@ -1440,7 +1439,7 @@ class Structure(ToXMLHelper,Parseable,ToString):
         self.basis[2][2] = s.basis[2][2]
         self.updateRecipBasis()
         if s.selective is not None:
-            self.selective   = map(lambda x:x[:],s.selective)
+            self.selective   = [x[:] for x in s.selective]
         self.comment     = s.comment[:]
         try:
             self.element= s.element
@@ -1562,4 +1561,4 @@ class Structure(ToXMLHelper,Parseable,ToString):
             if flag:
                 setCartesian()
         else:
-            raise "Bad Structure.scaling: %s"%str(scaling)
+            raise RuntimeError("Bad Structure.scaling: %s"%str(scaling))

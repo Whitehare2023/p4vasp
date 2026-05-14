@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 from distutils.core import setup, Extension
 from glob import *
@@ -25,11 +25,11 @@ setup(name="odpdom",
 #	    ('NO_POS_CACHE',None),
 	    ('VERBOSE','0')
           ]
-	)	  
+	)
       ],
       long_description="""ODPdom is a simple non-validating DOM (Document Object Model)
 parser written in C++.
 It can handle relatively large XML files with the size in order of 100 MB pro file.
-ODPdom provides an interface to Python."""      
+ODPdom provides an interface to Python."""
      )
 

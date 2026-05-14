@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -20,7 +20,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from __future__ import generators
+
 #from p4vasp.graph import *
 #from p4vasp.GraphCanvas import *
 #from p4vasp.store import *
@@ -251,7 +251,7 @@ class VACApplet(GraphWindowApplet,p4vasp.Selection.SelectionListener):
                                 msg().step(indx,len(allcarts))
                                 yield 1
                             ss[i].setCarthesian()
-                            ssi=map(array,ss[i])
+                            ssi=list(map(array,ss[i]))
                             allcarts[indx]=ssi#ss[i] #.positions
                             indx+=1
                         msg().step(0,1)

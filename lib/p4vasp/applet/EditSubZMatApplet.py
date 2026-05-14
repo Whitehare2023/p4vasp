@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -20,7 +20,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from __future__ import generators
+
 
 from math import *
 from p4vasp.store import *
@@ -211,7 +211,7 @@ class EditSubZMatApplet(Applet,SelectionListener):
         if len(sel)>1:
             try:
                 l1=float(eval(self.l1_entry.get_text()))
-                print "l1",l1
+                print(("l1",l1))
             except:
                 msg().error("Error parsing length 1 in sub-Z-matrix")
                 return
@@ -219,13 +219,13 @@ class EditSubZMatApplet(Applet,SelectionListener):
         if len(sel)>2:
             try:
                 l2=float(eval(self.l2_entry.get_text()))
-                print "l2",l2
+                print(("l2",l2))
             except:
                 msg().error("Error parsing length 2 in sub-Z-matrix")
                 return
             try:
                 a2=float(eval(self.a2_entry.get_text()))
-                print "a2",a2
+                print(("a2",a2))
             except:
                 msg().error("Error parsing angle 1 in sub-Z-matrix")
                 return
@@ -233,19 +233,19 @@ class EditSubZMatApplet(Applet,SelectionListener):
         if len(sel)>3:
             try:
                 l3=float(eval(self.l3_entry.get_text()))
-                print "l3",l3
+                print(("l3",l3))
             except:
                 msg().error("Error parsing length 3 in sub-Z-matrix")
                 return
             try:
                 a3=float(eval(self.a3_entry.get_text()))
-                print "a3",a3
+                print(("a3",a3))
             except:
                 msg().error("Error parsing angle 2 in sub-Z-matrix")
                 return
             try:
                 d3=float(eval(self.d3_entry.get_text()))
-                print "d3",d3
+                print(("d3",d3))
             except:
                 msg().error("Error parsing dihedral angle in sub-Z-matrix")
                 return

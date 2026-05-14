@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
 #  (see http://cms.mpi.univie.ac.at/vasp/Welcome.html)
@@ -24,5 +24,5 @@ from p4vasp.SystemPM import *
 l=XMLSystemPM("vasprun.xml").STRUCTURE_SEQUENCE_L
 
 for i in range(len(l)):
-    print i,l[i].mindist(0,1) # Here are the indices of the atoms
+    print((i,l[i].mindist(0,1))) # Here are the indices of the atoms
                            # forming the bond, starting from 0

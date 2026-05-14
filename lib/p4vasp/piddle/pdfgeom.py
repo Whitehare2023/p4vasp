@@ -1,3 +1,4 @@
+# -*- coding: latin-1 -*-
 # pdfgeom.py
 """
 This module includes any mathematical methods needed for PIDDLE.
@@ -46,7 +47,7 @@ such that the curve goes from (x1, y1) to (x4, y4) with (x2, y2) and
         sign = -1
     else:
         sign = 1
-    
+
     pointList = []
 
     for i in range(Nfrag):

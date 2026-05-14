@@ -146,8 +146,8 @@ class Dyna(Parseable,ToString):
         parts=[lines[i:i+3] for i in range(4,len(lines),3)]
         for p in parts:
             if len(p)==3:
-                p1=Vector(map(float,p[1].split()[:3]))
-                p2=Vector(map(float,p[2].split()[:3]))
+                p1=Vector(list(map(float,p[1].split()[:3])))
+                p2=Vector(list(map(float,p[2].split()[:3])))
                 self.segments.append((p1,p2))
                 self.labels.append([p[0].split()[0][1:-1],""])
             else:
@@ -203,7 +203,7 @@ class Dyna(Parseable,ToString):
             path+=(p2-p1).length()
             label=None
             if i%n==0:
-                label=self.labels[i/n][0]
+                label=self.labels[i//n][0]
             if i==len(points)-1:
                 label=self.labels[-1][1]
             yield (p1,path,label)

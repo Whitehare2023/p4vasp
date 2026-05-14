@@ -1,8 +1,8 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 import unittest
 from p4vasp.paint3d.ColladaPaint3D import *
 from p4vasp.matrix import Vector
-from StringIO import StringIO
+from io import StringIO
 
 class TestColladaPaint3D(unittest.TestCase):
     def testCylinder(self):

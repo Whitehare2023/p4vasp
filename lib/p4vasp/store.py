@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #
 # HappyDoc:docStringFormat='ClassicStructuredText'
 #
@@ -88,20 +88,21 @@ try:
     import p4vasp.ODPdom as dom
 except ImportError:
     try:
-        import ODPdom as dom
+        from . import ODPdom as dom
     except ImportError:
         import xml.dom.minidom as dom
 
 from types import *
 from string import *
 
-from cStringIO import *
+from io import *
 from sys import *
-from UserList import UserList
-from UserDict import UserDict
+from collections import UserList
+from collections import UserDict
 import marshal
 import binascii
 import pickle
+from p4vasp.compat import create_instance_from_name, resolve_dotted_name
 
 INDENT="  "
 
@@ -145,7 +146,7 @@ def getTextFromElement(elem):
   Note: The returntype is the ordinary string, not unicode."""
     from string import join
     f=lambda x:x.nodeType in [x.TEXT_NODE,x.CDATA_SECTION_NODE]
-    return join(map(lambda x:str(x.data),filter(f,elem.childNodes)),"")
+    return join([str(x.data) for x in list(filter(f,elem.childNodes))],"")
 
 class AttributeProfile:
     """General profile to define the storage of class attributes.
@@ -291,9 +292,9 @@ class IntListAttribute(AttributeProfile):
         AttributeProfile.__init__(self,name,attribute=attribute,encode=encode,tag=tag,tagattr=tagattr)
 
     def setEncodedValue(self,obj,val):
-        self.setValue(obj,map(int,split(str(val))))
+        self.setValue(obj,list(map(int,split(str(val)))))
     def getEncodedValue(self,obj):
-        return join(map(str,self.getValue(obj)))
+        return join(list(map(str,self.getValue(obj))))
 
 class ListAttribute(AttributeProfile):
     """The AttributeProfile for storing lists."""
@@ -334,9 +335,9 @@ class StringListAttribute(AttributeProfile):
         AttributeProfile.__init__(self,name,attribute=attribute,encode=encode,tag=tag,tagattr=tagattr)
 
     def setEncodedValue(self,obj,val):
-        self.setValue(obj,map(intern,split(str(val))))
+        self.setValue(obj,list(map(intern,split(str(val)))))
     def getEncodedValue(self,obj):
-        return join(map(str,self.getValue(obj)))
+        return join(list(map(str,self.getValue(obj))))
 
 class FloatListAttribute(AttributeProfile):
     """The AttributeProfile for storing a list of floats."""
@@ -344,9 +345,9 @@ class FloatListAttribute(AttributeProfile):
         AttributeProfile.__init__(self,name,attribute=attribute,encode=encode,tag=tag,tagattr=tagattr)
 
     def setEncodedValue(self,obj,val):
-        self.setValue(obj,map(float,split(str(val))))
+        self.setValue(obj,list(map(float,split(str(val)))))
     def getEncodedValue(self,obj):
-        return join(map(str,self.getValue(obj)))
+        return join(list(map(str,self.getValue(obj))))
 
 
 class IntTupleAttribute(AttributeProfile):
@@ -357,7 +358,7 @@ class IntTupleAttribute(AttributeProfile):
     def setEncodedValue(self,obj,val):
         self.setValue(obj,tuple(map(int,split(str(val)))))
     def getEncodedValue(self,obj):
-        return join(map(str,self.getValue(obj)))
+        return join(list(map(str,self.getValue(obj))))
 
 class FloatTupleAttribute(AttributeProfile):
     """The AttributeProfile for storing a tuple of floats."""
@@ -367,7 +368,7 @@ class FloatTupleAttribute(AttributeProfile):
     def setEncodedValue(self,obj,val):
         self.setValue(obj,tuple(map(float,split(str(val)))))
     def getEncodedValue(self,obj):
-        return join(map(str,self.getValue(obj)))
+        return join(list(map(str,self.getValue(obj))))
 
 class HexPickleAttribute(AttributeProfile):
     """The AttributeProfile for storing pickled attributes."""
@@ -397,15 +398,7 @@ class ClassAttribute(AttributeProfile):
         AttributeProfile.__init__(self,name,attribute=attribute,encode=encode,tag=tag,tagattr=tagattr)
 
     def setEncodedValue(self,obj,val):
-        v=map(strip,split(val,"."))
-        if len(v) and len(val):
-            if len(v)==1:
-                self.setValue(obj,eval(val))
-            else:
-                exec "import %s\no=%s\n"%(join(v[:-1],"."),val)
-                self.setValue(obj,o)
-        else:
-            self.setValue(obj,None)
+        self.setValue(obj, resolve_dotted_name(val, globals()) if len(val) else None)
 
     def getEncodedValue(self,obj):
         c=self.getValue(obj)
@@ -444,15 +437,7 @@ def getClassName(object):
 
 def createClassFromName(name):
     """Create class instance from class name *name*."""
-    v=split(name,".")
-    module=join(v[:-1],".")
-    cname=v[-1]
-    cmd=""
-    if len(module):
-        cmd="import %s\n"%module
-    cmd="%scl=%s()"%(cmd,name)
-    exec cmd
-    return cl
+    return create_instance_from_name(name, globals())
 
 class IgnoreProfile:
     def __init__(self,name):
@@ -566,11 +551,11 @@ class Profile:
         }
         self.retrieve_handlers={
           "int":           lambda x:int(getTextFromElement(x)),
-          "long":          lambda x:long(getTextFromElement(x)),
+          "long":          lambda x:int(getTextFromElement(x)),
           "float":         lambda x:float(getTextFromElement(x)),
-          "complex":       lambda x:apply(complex,map(float,split(getTextFromElement(x)))),
+          "complex":       lambda x:complex(*list(map(float,split(getTextFromElement(x))))),
           "string":        lambda x:str(getTextFromElement(x)),
-          "unicode":       lambda x:unicode(getTextFromElement(x)),
+          "unicode":       lambda x:str(getTextFromElement(x)),
           "None":          lambda x:None,
           "list":          self.retrieveListHandler,
           "tuple":         lambda x,s=self:s.rll(x,tuple(s.retrieveListHandler(x))),
@@ -673,7 +658,7 @@ class Profile:
             if a[i].name==name:
                 del a[i]
         a=self.aprof_by_name
-        for key,value in a.items():
+        for key,value in list(a.items()):
             if value.name==name:
                 del a[key]
         aprof.parent=self
@@ -704,7 +689,7 @@ class Profile:
             ctab=self.countObjects(obj,{})
         ref={}
         label=1
-        for key,val in ctab.items():
+        for key,val in list(ctab.items()):
             if val:
                 ref[key]=label
                 label=label+1
@@ -720,14 +705,14 @@ class Profile:
     """
         p=self.parent
         while p is not None:
-            if p.write_handlers.has_key(type(x)):
-                return apply(p.write_handlers[type(x)],(f,x,indent,label))
+            if type(x) in p.write_handlers:
+                return p.write_handlers[type(x)](*(f,x,indent,label))
             p=p.parent
 
         try:
             writePickleHandler(f,x,indent,label)
         except:
-            print "Warning: can't encode",type(x),", encoded as <None/>"
+            print(("Warning: can't encode",type(x),", encoded as <None/>"))
             f.write('%s<None/><!-- encoding error -->\n'%(indent*INDENT))
 
     def defaultWriteAttrHandler(self,f,key,val,indent=0):
@@ -754,12 +739,12 @@ class Profile:
         for x in elem.childNodes:
             if x.nodeType==x.ELEMENT_NODE and x.nodeName == "pair":
                 try:
-                    sub=filter(lambda xx:xx.nodeType==xx.ELEMENT_NODE,x.childNodes)
+                    sub=[xx for xx in x.childNodes if xx.nodeType==xx.ELEMENT_NODE]
                     key   = self.retrieve(sub[0])
                     value = self.retrieve(sub[1])
                     d[key]=value
                 except:
-                    print "Error reading dictionary pair."
+                    print("Error reading dictionary pair.")
 
         return self.rll(elem,d)
 
@@ -793,7 +778,7 @@ class Profile:
             f.write('%s<dict label="%s">\n'%(in0,label))
         else:
             f.write('%s<dict>\n'%(in0))
-        for key,val in obj.items():
+        for key,val in list(obj.items()):
             f.write("%s<pair>\n"%(in1))
             self.write(f,key,indent+2)
             self.write(f,val,indent+2)
@@ -823,7 +808,7 @@ class Profile:
         "retrieve handler for references (written by writeRef)."
         label=elem.getAttribute("label")
 #    return self.getRoot().retrieve_reftable[label]
-        if self.getRoot().retrieve_reftable.has_key(label):
+        if label in self.getRoot().retrieve_reftable:
             return self.getRoot().retrieve_reftable[label]
         else:
             root =getRootNode(elem)
@@ -839,7 +824,7 @@ class Profile:
     call the *createReftable(obj)* method before *write*.
         """
         if label is not None:
-            print "Warning, label %s in Profile.write."%str(label)
+            print(("Warning, label %s in Profile.write."%str(label)))
         wh=self.write_handlers
         iobj=id(obj)
         flag=1
@@ -847,10 +832,10 @@ class Profile:
         wrids=self.getRoot().written_ids
         if iobj in wrids:
             flag=0
-            if wreft.has_key(iobj):
+            if iobj in wreft:
                 self.writeRef(f,wreft[iobj],indent)
             else:
-                print "Object referenced more than once without label.",iobj,obj
+                print(("Object referenced more than once without label.",iobj,obj))
                 flag=1
 
         if flag:
@@ -862,15 +847,15 @@ class Profile:
                     flag=0
             if flag:
                 wrids.append(iobj)
-            if wreft.has_key(iobj):
+            if iobj in wreft:
                 label=wreft[iobj]
             else:
                 if label is not None:
-                    if label in self.wreft.values():
+                    if label in list(self.wreft.values()):
                         label=None
 
-            if wh.has_key(type(obj)):
-                apply(wh[type(obj)],(f,obj,indent,label))
+            if type(obj) in wh:
+                wh[type(obj)](*(f,obj,indent,label))
             else:
                 self.defaultWriteHandler(f,obj,indent,label)
 
@@ -882,8 +867,8 @@ class Profile:
 
         wh=self.write_handlers
 #    print "  handlers:",wh.keys()
-        if wh.has_key(obj.__class__):
-            apply(wh[obj.__class__],(f,obj,indent,label))
+        if obj.__class__ in wh:
+            wh[obj.__class__](*(f,obj,indent,label))
         else:
             cp=self.class_profiles
             for i in range(len(cp)-1,-1,-1):
@@ -899,15 +884,15 @@ class Profile:
     def retrieve(self,elem):
         "Retrieve object from a DOM Element *elem*."
         if elem.nodeType == elem.ELEMENT_NODE:
-            if self.retrieve_handlers.has_key(elem.nodeName):
-                return apply(self.retrieve_handlers[elem.nodeName],(elem,))
+            if elem.nodeName in self.retrieve_handlers:
+                return self.retrieve_handlers[elem.nodeName](*(elem,))
             else:
                 if self.parent is not None:
                     return self.parent.retrieve(elem)
                 else:
-                    raise "Unknown tag: %s"%elem.nodeName
+                    raise RuntimeError("Unknown tag: %s"%elem.nodeName)
         else:
-            raise "Not a DOM Element node in Profile.retrieve"
+            raise RuntimeError("Not a DOM Element node in Profile.retrieve")
 
 
     def countObjects(self,obj,ctab={}):
@@ -921,7 +906,7 @@ class Profile:
             if obj.__class__ in self.nonref_types:
                 return ctab
         iobj=id(obj)
-        if ctab.has_key(iobj):
+        if iobj in ctab:
             ctab[iobj]=ctab[iobj]+1
             return ctab
         else:
@@ -935,13 +920,13 @@ class Profile:
                                 return cp[i].countObjectsObj(obj,ctab)
                             except:
                                 pass
-                for x in obj.__dict__.values():
+                for x in list(obj.__dict__.values()):
                     self.countObjects(x,ctab)
             elif type(obj) in [TupleType,ListType]:
                 for x in obj:
                     self.countObjects(x,ctab)
             elif type(obj) is DictionaryType:
-                for key,val in obj.items():
+                for key,val in list(obj.items()):
                     self.countObjects(key,ctab)
                     self.countObjects(val,ctab)
             return ctab
@@ -954,7 +939,7 @@ class Profile:
         attr=self.aprof_list[:]
         dattr=[]
         if self.disable_attr!=1:
-            d=obj.__dict__.keys()
+            d=list(obj.__dict__.keys())
             try:
                 d.remove("__doc__")
             except:
@@ -963,12 +948,12 @@ class Profile:
                 d.remove("__module__")
             except:
                 pass
-            dd=map(lambda x:x.attribute,attr)
-            dattr=filter(lambda x,dd=dd:x not in dd,d)
+            dd=[x.attribute for x in attr]
+            dattr=list(filter(lambda x,dd=dd:x not in dd,d))
 
         if type(self.disable_attr) is not IntType:
-            attr =filter(lambda x,l=self.disable_attr:x.name not in l,attr)
-            dattr=filter(lambda x,l=self.disable_attr:x not in l,dattr)
+            attr =list(filter(lambda x,l=self.disable_attr:x.name not in l,attr))
+            dattr=list(filter(lambda x,l=self.disable_attr:x not in l,dattr))
 
         for a in attr:
             self.parent.countObjects(a.getValue(obj),ctab)
@@ -988,7 +973,7 @@ class Profile:
         attr=self.aprof_list[:]
         dattr=[]
         if self.disable_attr!=1:
-            d=obj.__dict__.keys()
+            d=list(obj.__dict__.keys())
             try:
                 d.remove("__doc__")
             except:
@@ -997,12 +982,12 @@ class Profile:
                 d.remove("__module__")
             except:
                 pass
-            dd=map(lambda x:x.attribute,attr)
-            dattr=filter(lambda x,dd=dd:x not in dd,d)
+            dd=[x.attribute for x in attr]
+            dattr=list(filter(lambda x,dd=dd:x not in dd,d))
 
         if type(self.disable_attr) is not IntType:
-            attr =filter(lambda x,l=self.disable_attr:x.name not in l,attr)
-            dattr=filter(lambda x,l=self.disable_attr:x not in l,dattr)
+            attr =list(filter(lambda x,l=self.disable_attr:x.name not in l,attr))
+            dattr=list(filter(lambda x,l=self.disable_attr:x not in l,dattr))
 
 
         if self.tagname is None:
@@ -1029,7 +1014,7 @@ class Profile:
                 self.writeItem(f,x,indent+1)
 
         if self.dict_saving:
-            for key,val in obj.items():
+            for key,val in list(obj.items()):
                 self.writePair(f,key,value,indent+1)
 
         if self.tagname is None:
@@ -1040,23 +1025,14 @@ class Profile:
     def createClass(self):
         """Create class instance of the class handled by this Profile."""
         if self.object is not None:
-            return apply(self.object,())
+            return self.object(*())
         else:
-            name=self.name
-            v=split(name,".")
-            module=join(v[:-1],".")
-            cname=v[-1]
-            cmd=""
-            if len(module):
-                cmd="import %s\n"%module
-            cmd="%scl=%s()"%(cmd,name)
-            exec cmd
-            return cl
+            return create_instance_from_name(self.name, globals())
 
     def retrieveAttr(self,elem,c):
         """retrieve attribute of class instance *c* from DOM Element *elem*."""
         name=elem.getAttribute("name")
-        if self.aprof_by_name.has_key(name):
+        if name in self.aprof_by_name:
             p=self.aprof_by_name[name]
             p.retrieveObj(elem,c)
         else:
@@ -1110,17 +1086,17 @@ class Profile:
                     x=attrib.item(i)
                     key=x.nodeName
                     if key not in exclude:
-                        if self.aprof_by_name.has_key(key):
+                        if key in self.aprof_by_name:
                             self.aprof_by_name[key].setEncodedValue(c,x.nodeValue)
                         else:
-                            print 'Unknown tagattr attribute for %s while retrieveing %s.'%(key,name)
+                            print(('Unknown tagattr attribute for %s while retrieveing %s.'%(key,name)))
 
             for x in elem.childNodes:
                 if x.nodeType==x.ELEMENT_NODE:
-                    if self.retrieve_class_handlers.has_key(x.nodeName):
-                        apply(self.retrieve_class_handlers[x.nodeName],(x,c))
+                    if x.nodeName in self.retrieve_class_handlers:
+                        self.retrieve_class_handlers[x.nodeName](*(x,c))
                     else:
-                        print 'Unknown tag method for <%s>.'%(x.nodeName)
+                        print(('Unknown tag method for <%s>.'%(x.nodeName)))
 
             self.afterRetrieveObj(c,elem)
             return c
@@ -1170,19 +1146,19 @@ class Profile:
       class - class (ClassType)
     """
         if type(l) is StringType:
-            l=map(split,split(l,"\n"))
+            l=list(map(split,split(l,"\n")))
         for x in l:
             if len(x):
                 if len(x)==1:
                     if x[0]!="attr":
                         self.addAttr(AttributeProfile(x[0],tag=1))
                     else:
-                        raise "'attr' attribute not allowed"
+                        raise RuntimeError("'attr' attribute not allowed")
                 elif len(x)==2:
                     t=x[0]
                     a=x[1]
                     if a=="label":
-                        raise "'label' attribute not allowed"
+                        raise RuntimeError("'label' attribute not allowed")
                     if t=="int":
                         self.addAttr(IntAttribute(a,tag=1,tagattr=1))
                     elif t=="string":
@@ -1210,7 +1186,7 @@ class Profile:
                     n=x[1]
                     a=x[2]
                     if n=="label":
-                        raise "'label' attribute not allowed"
+                        raise RuntimeError("'label' attribute not allowed")
                     if t=="int":
                         self.addAttr(IntAttribute(n,attribute=a,tag=1,tagattr=1))
                     elif t=="string":
@@ -1278,7 +1254,7 @@ if __name__=="__main__":
         def get_c(self):
             return self.c
         def repare():
-            print "repare Test class"
+            print("repare Test class")
         def __str__(self):
             return "Test(a=%s,b=%s,c=%s,d=%s,bb=%s)"%(str(self.a),str(self.b),str(self.c),str(self.d),str(self.bb))
         __repr__=__str__
@@ -1305,20 +1281,20 @@ if __name__=="__main__":
 #  f.close()
     s=sp.dumps(l)
 
-    print s
+    print(s)
 
 #  e=dom.parseString(s).documentElement
 #  print "element parsed"
 #  val=sp.retrieve(e)
 #  print "retrieved"
     val=sp.loads(s)
-    print l,type(l)
-    print val,type(val)
+    print((l,type(l)))
+    print((val,type(val)))
     for i in range(len(val)):
-        print i,":",type(val[i]),val[i]
+        print((i,":",type(val[i]),val[i]))
 
-    print
-    print
+    print()
+    print()
 
     class Test:
         def __init__(self,a=0):
@@ -1346,7 +1322,7 @@ if __name__=="__main__":
     testprofile.addAttr(HexPickleAttribute("e",tagattr=1))
     profile.addClass(testprofile)
 
-    print l
+    print(l)
     s = profile.dumps(l)
-    print s
-    print profile.loads(s)
+    print(s)
+    print((profile.loads(s)))

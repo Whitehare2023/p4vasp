@@ -1,8 +1,8 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 import unittest
 from p4vasp.paint3d.PovrayPaint3D import *
 from p4vasp.matrix import Vector
-from StringIO import StringIO
+from io import StringIO
 from p4vasp.paint3d.MeshTools import sphereMesh
 
 class TestPovrayPaint3D(unittest.TestCase):
@@ -13,8 +13,8 @@ class TestPovrayPaint3D(unittest.TestCase):
 
         f=StringIO()
         p.write(f)
-        self.assert_("< 1.0" in f.getvalue())
-        self.assert_("colmat" in f.getvalue())
+        self.assertTrue("< 1.0" in f.getvalue())
+        self.assertTrue("colmat" in f.getvalue())
         f.close()
 
     def testSphere(self):
@@ -26,10 +26,10 @@ class TestPovrayPaint3D(unittest.TestCase):
 
         f=StringIO()
         p.write(f)
-        self.assert_("sphere" in f.getvalue())
-        self.assert_("< 2.0" in f.getvalue())
-        self.assert_("colmat" in f.getvalue())
-        self.assert_("color rgb < 1.0" in f.getvalue())
+        self.assertTrue("sphere" in f.getvalue())
+        self.assertTrue("< 2.0" in f.getvalue())
+        self.assertTrue("colmat" in f.getvalue())
+        self.assertTrue("color rgb < 1.0" in f.getvalue())
         f.close()
 
     def testCylinder(self):
@@ -42,11 +42,11 @@ class TestPovrayPaint3D(unittest.TestCase):
         p.cylinder(position1,position2,7,material="colmat")
 
         p.write(f)
-        self.assert_("cylinder" in f.getvalue())
-        self.assert_("< 2.0" in f.getvalue())
-        self.assert_("< 4.0" in f.getvalue())
-        self.assert_("colmat" in f.getvalue())
-        self.assert_("color rgb < 1.0" in f.getvalue())
+        self.assertTrue("cylinder" in f.getvalue())
+        self.assertTrue("< 2.0" in f.getvalue())
+        self.assertTrue("< 4.0" in f.getvalue())
+        self.assertTrue("colmat" in f.getvalue())
+        self.assertTrue("color rgb < 1.0" in f.getvalue())
         f.close()
 
     def testCone(self):
@@ -59,11 +59,11 @@ class TestPovrayPaint3D(unittest.TestCase):
         p.cone(position1,position2,7,material="colmat")
 
         p.write(f)
-        self.assert_("cone" in f.getvalue())
-        self.assert_("< 2.0" in f.getvalue())
-        self.assert_("< 4.0" in f.getvalue())
-        self.assert_("colmat" in f.getvalue())
-        self.assert_("color rgb < 1.0" in f.getvalue())
+        self.assertTrue("cone" in f.getvalue())
+        self.assertTrue("< 2.0" in f.getvalue())
+        self.assertTrue("< 4.0" in f.getvalue())
+        self.assertTrue("colmat" in f.getvalue())
+        self.assertTrue("color rgb < 1.0" in f.getvalue())
         f.close()
 
     def testLine(self):
@@ -76,11 +76,11 @@ class TestPovrayPaint3D(unittest.TestCase):
         p.line(position1,position2,7,material="colmat")
 
         p.write(f)
-        self.assert_("cylinder" in f.getvalue())
-        self.assert_("< 2.0" in f.getvalue())
-        self.assert_("< 4.0" in f.getvalue())
-        self.assert_("colmat" in f.getvalue())
-        self.assert_("color rgb < 1.0" in f.getvalue())
+        self.assertTrue("cylinder" in f.getvalue())
+        self.assertTrue("< 2.0" in f.getvalue())
+        self.assertTrue("< 4.0" in f.getvalue())
+        self.assertTrue("colmat" in f.getvalue())
+        self.assertTrue("color rgb < 1.0" in f.getvalue())
         f.close()
 
     def testPerspectiveCamera(self):
@@ -94,10 +94,10 @@ class TestPovrayPaint3D(unittest.TestCase):
 
         f=StringIO()
         p.write(f)
-        self.assert_("camera" in f.getvalue())
-        self.assert_("< 2.0" in f.getvalue())
-        self.assert_("< 4.0" in f.getvalue())
-        self.assert_("perspective" in f.getvalue())
+        self.assertTrue("camera" in f.getvalue())
+        self.assertTrue("< 2.0" in f.getvalue())
+        self.assertTrue("< 4.0" in f.getvalue())
+        self.assertTrue("perspective" in f.getvalue())
         f.close()
 
     def testOrthographicCamera(self):
@@ -111,10 +111,10 @@ class TestPovrayPaint3D(unittest.TestCase):
 
         f=StringIO()
         p.write(f)
-        self.assert_("camera" in f.getvalue())
-        self.assert_("< 2.0" in f.getvalue())
-        self.assert_("< 4.0" in f.getvalue())
-        self.assert_("orthographic" in f.getvalue())
+        self.assertTrue("camera" in f.getvalue())
+        self.assertTrue("< 2.0" in f.getvalue())
+        self.assertTrue("< 4.0" in f.getvalue())
+        self.assertTrue("orthographic" in f.getvalue())
         f.close()
 
     def testAmbientLight(self):
@@ -124,8 +124,8 @@ class TestPovrayPaint3D(unittest.TestCase):
 
         f=StringIO()
         p.write(f)
-        self.assert_("ambient_light" in f.getvalue())
-        self.assert_("color rgb < 1.0" in f.getvalue())
+        self.assertTrue("ambient_light" in f.getvalue())
+        self.assertTrue("color rgb < 1.0" in f.getvalue())
         f.close()
 
     def testBackground(self):
@@ -135,8 +135,8 @@ class TestPovrayPaint3D(unittest.TestCase):
 
         f=StringIO()
         p.write(f)
-        self.assert_("background" in f.getvalue())
-        self.assert_("color rgb < 1.0" in f.getvalue())
+        self.assertTrue("background" in f.getvalue())
+        self.assertTrue("color rgb < 1.0" in f.getvalue())
         f.close()
 
     def testPointLight(self):
@@ -146,9 +146,9 @@ class TestPovrayPaint3D(unittest.TestCase):
 
         f=StringIO()
         p.write(f)
-        self.assert_("light_source" in f.getvalue())
-        self.assert_("< 2.0" in f.getvalue())
-        self.assert_("rgb < 1.0" in f.getvalue())
+        self.assertTrue("light_source" in f.getvalue())
+        self.assertTrue("< 2.0" in f.getvalue())
+        self.assertTrue("rgb < 1.0" in f.getvalue())
         f.close()
 
     def testFrame(self):
@@ -161,9 +161,9 @@ class TestPovrayPaint3D(unittest.TestCase):
         f=StringIO()
         p.mesh(coordinates,normals,triangles)
         p.write(f)
-        self.assert_("mesh" in f.getvalue())
-        self.assert_("smooth_triangle" in f.getvalue())
+        self.assertTrue("mesh" in f.getvalue())
+        self.assertTrue("smooth_triangle" in f.getvalue())
         f.close()
-       
+
 if __name__ == '__main__':
     unittest.main()

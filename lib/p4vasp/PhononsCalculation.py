@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import p4vasp.matrix as p4m
 import numpy as np
@@ -226,8 +226,8 @@ class PhononsCalculation(object):
             k = self._prim_cell.dir2cart(k, self._rec_cell) * 2 * math.pi
 
             # Calculate the Dynamical Matrix
-            for mu, ka in itt.product(range(self._prim_num), repeat = 2):
-                for a, b in itt.product(range(3), repeat = 2):
+            for mu, ka in itt.product(list(range(self._prim_num)), repeat = 2):
+                for a, b in itt.product(list(range(3)), repeat = 2):
                     tmp = 0
                     for l in self._species_idx[ka]:
                         phase = sum(cmath.exp(1j * (k * diff))

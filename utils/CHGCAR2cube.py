@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #  This utility is a part of p4vasp package.
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -25,20 +25,20 @@ from p4vasp.cStructure import *
 from sys import *
 
 if len(argv)<3:
-    print "%s inputfile outputfile"%argv[0]
+    print(("%s inputfile outputfile"%argv[0]))
     exit(-1)
 
 c=Chgcar()
-print "Reading"
+print("Reading")
 c.read(argv[1])
-print "OK"
+print("OK")
 struct=Structure(pointer=c.structure)
 #struct.setDirect()
 #struct.translate(Vector(-0.5,-0.5,-0.5))
 struct.setCarthesian()
 comment=struct.comment
-print comment
-print "Dimensions:",c.nx,c.ny,c.nz
+print(comment)
+print(("Dimensions:",c.nx,c.ny,c.nz))
 f=open(argv[2],"w")
 
 volume=abs(struct.basis[0].cross(struct.basis[1])*struct.basis[2])
@@ -56,7 +56,7 @@ for i in range(len(struct)):
 
 
 for x in range(c.nx):
-    print x,"/",c.nx
+    print((x,"/",c.nx))
     for y in range(c.ny):
         for z in range(c.nz):
             f.write("%g "%(c.get(x,y,z)/volume))

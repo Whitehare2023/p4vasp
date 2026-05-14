@@ -30,15 +30,22 @@ Basic *Vector* and *Matrix* manipulation library.
 """
 
 from math import sqrt,acos,sin,cos
-from string import joinfields, split, atof, atoi,join
 from types import *
-from UserList import *
+from collections import *
+from functools import reduce
 
-try:
-    if StringType not in StringTypes:
-        raise "This can't be true: StringType not in StringTypes !!!"
-except NameError:
-    StringTypes=(StringType,UnicodeType)
+StringTypes=(str,)
+ListType=list
+TupleType=tuple
+IntType=int
+FloatType=float
+ComplexType=complex
+
+def split(value):
+    return value.split()
+
+def join(values, separator=" "):
+    return separator.join(values)
 
 
 
@@ -73,13 +80,13 @@ class Vector(UserList):
     Note: *Vector* is not a *Matrix* subclass.
         """
         if type(x) in StringTypes:
-            UserList.__init__(self,map(float,split(x)))
+            UserList.__init__(self,list(map(float,split(x))))
         if (type(x) in [ListType,TupleType]) or isinstance(x,UserList):
-            UserList.__init__(self,map(float,x))
+            UserList.__init__(self,list(map(float,x)))
         elif type(x) in [IntType,FloatType,ComplexType]:
             UserList.__init__(self,[x,y,z])
         else:
-            raise "Unknown init parameters in Vector(%s,%s,%s)"%(repr(x),repr(y),repr(z))
+            raise TypeError("Unknown init parameters in Vector(%s,%s,%s)"%(repr(x),repr(y),repr(z)))
 
     def __add__(self,o):
         "Vector addition."
@@ -92,7 +99,7 @@ class Vector(UserList):
                     l.append(self[i]+o[i])
                 return Vector(l)
         else:
-            raise TypeError, "other is no vector in vector addition"
+            raise TypeError("other is no vector in vector addition")
 
     __radd__=__add__
 
@@ -107,7 +114,7 @@ class Vector(UserList):
                     l.append(self[i]-o[i])
                 return Vector(l)
         else:
-            raise TypeError, "other is no vector in vector subtraction"
+            raise TypeError("other is no vector in vector subtraction")
 
     def __rsub__(self,o):
         "Vector subtraction."
@@ -120,11 +127,11 @@ class Vector(UserList):
                     l.append(o[i]-self[i])
                 return Vector(l)
         else:
-            raise TypeError, "other is no vector in right vector subtraction"
+            raise TypeError("other is no vector in right vector subtraction")
 
     def __neg__(self):
         "Negative Vector (-v)"
-        return Vector(map(lambda x:-x,self.data))
+        return Vector([-x for x in self.data])
 
 
     def __mul__(self,other):
@@ -139,15 +146,15 @@ class Vector(UserList):
                 sum=sum+self[i]*other[i]
             return sum
         elif isMatrix(other):
-            raise TypeError, "other must not be a matrix"
+            raise TypeError("other must not be a matrix")
         else:
-            return Vector(map(lambda x,a=other:a*x,self.data))
+            return Vector(list(map(lambda x,a=other:a*x,self.data)))
 
     def __rmul__(self,other):
         """Vector multiplication.
     The *other* parameter can be a scalar.
         """
-        return Vector(map(lambda x,a=other:a*x,self.data))
+        return Vector(list(map(lambda x,a=other:a*x,self.data)))
 
     def cross(self,other):
         """Cross product."""
@@ -158,17 +165,17 @@ class Vector(UserList):
             tmp[2]=self[0]*other[1]-self[1]*other[0]
             return tmp
         else:
-            raise TypeError, "other is no vector in cross product"
+            raise TypeError("other is no vector in cross product")
 
     def length(self):
         "Length of vector."
-        return sqrt(reduce(lambda x,y:x+y,map(lambda z:z*z,self.data)))
+        return sqrt(reduce(lambda x,y:x+y,[z*z for z in self.data]))
 
     def normal(self):
         "Normalized vector. The result has *length()=1* ."
         l=self.length()
         if l == 0:
-            raise ZeroDivisionError, "self is a zero-length vector"
+            raise ZeroDivisionError("self is a zero-length vector")
         else:
             return (1.0/l)*self
 
@@ -181,24 +188,24 @@ class Vector(UserList):
             if tmp>=-1.0 and tmp <=1.0:
                 return acos(tmp)
             else:
-                raise "domain error in function acos()!"
+                raise ValueError("domain error in function acos()!")
         else:
-            raise TypeError, "other is no vector"
+            raise TypeError("other is no vector")
 
     def __str__(self):
         "String representation: values separated by whitespace."
         s = ""
-        t=map(lambda x:type(x) == FloatType,self)
+        t=[type(x) == FloatType for x in self]
         if reduce(lambda x,y: x and y, t):
             for i in range(0,len(self)):
                 s = s + ("%+14.10f " % (self[i]))
             return s
         else:
-            return join(map(str,self))
+            return join(list(map(str,self)))
 
     def __repr__(self):
         "Python style representation."
-        return "Vector([%s])"%join(map(repr,self),",")
+        return "Vector([%s])"%join(list(map(repr,self)),",")
     def write(self,f):
         "Write vector into the file *f* (in string representation)."
         f.write(str(self)+"\n")
@@ -264,13 +271,13 @@ class Matrix(UserList):
         if type(self[0][0]) == FloatType:
             s="Matrix:\n"
             for a in self:
-                s+=join(map(lambda x:"%+14.12f "%x,a))
+                s+=join(["%+14.12f "%x for x in a])
                 s+="\n"
             return s
         else:
             s="Matrix:\n"
             for a in self:
-                s+=join(map(lambda x:"%-14s "%str(x),a))
+                s+=join(["%-14s "%str(x) for x in a])
                 s+="\n"
             return s
 
@@ -289,7 +296,7 @@ class Matrix(UserList):
         "Matrix addition."
         if isMatrix(other):
             if (self.m != other.m) or (self.n != other.n):
-                raise TypeError,"ranks differ in addition (%d,%d)!=(%d,%d)."%(self.m,self.n,other.m,other.n)
+                raise TypeError("ranks differ in addition (%d,%d)!=(%d,%d)."%(self.m,self.n,other.m,other.n))
             tmp=self.clone()
             for i in range(0,len(self)):
                 x=tmp[i]
@@ -298,7 +305,7 @@ class Matrix(UserList):
                     x[j]+=y[j]
             return tmp
         else:
-            raise TypeError,"error in matrix addition"
+            raise TypeError("error in matrix addition")
 
     __radd__=__add__
 
@@ -306,7 +313,7 @@ class Matrix(UserList):
         "Matrix subtraction."
         if isMatrix(other):
             if (self.m != other.m) or (self.n != other.n):
-                raise TypeError,"ranks differ in subtraction (%d,%d)!=(%d,%d)."%(self.m,self.n,other.m,other.n)
+                raise TypeError("ranks differ in subtraction (%d,%d)!=(%d,%d)."%(self.m,self.n,other.m,other.n))
             tmp=self.clone()
             for i in range(0,len(self)):
                 x=tmp[i]
@@ -316,13 +323,13 @@ class Matrix(UserList):
             return tmp
 
         else:
-            raise TypeError,"error in matrix subtraction"
+            raise TypeError("error in matrix subtraction")
 
     def __rsub__(self,other):
         "Matrix subtraction."
         if isMatrix(other):
             if (self.m != other.m) or (self.n != other.n):
-                raise TypeError,"ranks differ in subtraction (%d,%d)!=(%d,%d)."%(self.m,self.n,other.m,other.n)
+                raise TypeError("ranks differ in subtraction (%d,%d)!=(%d,%d)."%(self.m,self.n,other.m,other.n))
             tmp=self.clone()
             for i in range(0,min(len(self),len(other))):
                 x=tmp[i]
@@ -332,13 +339,13 @@ class Matrix(UserList):
             return tmp
 
         else:
-            raise TypeError,"error in matrix subtraction"
+            raise TypeError("error in matrix subtraction")
 
     def __neg__(self):
         "Matrix negation. (-m)"
         tmp=[]
         for i in range(0,len(self)):
-            tmp.append(map(lambda x:-x,self[i]))
+            tmp.append([-x for x in self[i]])
         return Matrix(tmp)
 
 
@@ -346,7 +353,7 @@ class Matrix(UserList):
         "Multiplication with *other* matrix, vector or scalar."
         if isMatrix(other):
             if self.n != other.n:
-                raise TypeError,"ranks differ in matrix multiplication (%d,%d)!=(%d,%d)."%(self.m,self.n,other.m,other.n)
+                raise TypeError("ranks differ in matrix multiplication (%d,%d)!=(%d,%d)."%(self.m,self.n,other.m,other.n))
             tmp=Matrix(self.n,other.n)
             for i in range(0,tmp.m):
                 for j in range(0,tmp.n):
@@ -356,7 +363,7 @@ class Matrix(UserList):
             return tmp
         elif isVector(other):
             if self.n != len(other):
-                raise TypeError,"ranks differ in matrix*vector multiplication Matrix(%d,%d)*Vector(%d)."%(self.m,self.n,len(other))
+                raise TypeError("ranks differ in matrix*vector multiplication Matrix(%d,%d)*Vector(%d)."%(self.m,self.n,len(other)))
             tmp=Vector([0.0]*self.m)
             for i in range(0,self.m):
                 for j in range(0,self.n):
@@ -368,13 +375,13 @@ class Matrix(UserList):
                 tmp[i]*=other
             return tmp
         else:
-            raise TypeError,"unknown type in matrix multiplication"
+            raise TypeError("unknown type in matrix multiplication")
 
     def __rmul__(self,other):
         "Multiplication with *other* matrix."
         if isMatrix(other):
             if self.n != other.n:
-                raise TypeError,"ranks differ in matrix multiplication (%d,%d)!=(%d,%d)."%(self.m,self.n,other.m,other.n)
+                raise TypeError("ranks differ in matrix multiplication (%d,%d)!=(%d,%d)."%(self.m,self.n,other.m,other.n))
             tmp=Matrix(other.n,self.n)
             for i in range(0,tmp.m):
                 for j in range(0,tmp.n):
@@ -383,7 +390,7 @@ class Matrix(UserList):
 
             return tmp
         else:
-            raise TypeError,"error in right matrix multiplication"
+            raise TypeError("error in right matrix multiplication")
 
     def det(self):
         "Determinant - defined for 3x3 matrix only."
@@ -392,7 +399,7 @@ class Matrix(UserList):
                   - self[0][1]*self[1][0]*self[2][2] + self[0][1]*self[2][0]*self[1][2] \
                   + self[0][2]*self[1][0]*self[2][1] - self[0][2]*self[2][0]*self[1][1])
         else:
-            raise TypeError, "determinants of third order defined only"
+            raise TypeError("determinants of third order defined only")
 
     def subDet(self,I,J):
         "Subdeterminant *(I,J)* (for 3x3 matrix only). Used in *inverse()* ."
@@ -406,7 +413,7 @@ class Matrix(UserList):
             a,b,c,d=v
             return a*d-b*c
         else:
-            raise TypeError, "subdeterminants of third order defined only"
+            raise TypeError("subdeterminants of third order defined only")
 
     def inverse(self):
         "Inverse matrix (for 3x3 matrix only)."
@@ -418,7 +425,7 @@ class Matrix(UserList):
                     M[i][j]=(-1)**(i+j)*self.subDet(j,i)/D
             return M
         else:
-            raise TypeError, "subdeterminants of third order defined only"
+            raise TypeError("subdeterminants of third order defined only")
 
     def clone(self):
         "Create a copy of the matrix."
@@ -517,13 +524,13 @@ if __name__=="__main__":
     B[0][1]=4
     A.trans()
 
-    print repr(A)
-    print A
-    print A*v
+    print((repr(A)))
+    print(A)
+    print((A*v))
 
-    print "A",A
-    print "B",B
-    print "B*A",B*A
+    print(("A",A))
+    print(("B",B))
+    print(("B*A",B*A))
 
 #A.set([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0])
 #B=Matrix()

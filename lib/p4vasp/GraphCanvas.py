@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -98,7 +98,7 @@ class Export:
 
     def _on_file_entry_changed(self,*arg):
         self.file=self.file_entry.get_text()
-        for k,v in self.option_extensions.items():
+        for k,v in list(self.option_extensions.items()):
             if self.file[-len(k):]==k:
                 self.type_options.set_history(v)
                 self.type=v
@@ -135,7 +135,7 @@ class Export:
             for g in data:
                 for s in g:
                     for l in s:
-                        f.write(string.join(map(lambda x:"%12g"%x,l)))
+                        f.write(string.join(["%12g"%x for x in l]))
                         f.write("\n");
                     f.write("\n")
                 f.write("\n\n")
@@ -410,11 +410,11 @@ class GraphCanvas(piddleGTK2p4.InteractiveCanvas):
         self.onOverCallback(self,event.x,event.y,event.button)
         self.onClickCallback(self,event.x,event.y,event.button)
     def _motion_notify_handler(self,widget,event,data=None):
-        print "_motion_notify_handler",event.x,event.y
+        print(("_motion_notify_handler",event.x,event.y))
         self.point=event.x,event.y
         self.onOverCallback(self,event.x,event.y)
     def onClickCallback(self,canvas,x,y,button=1):
-        print "onClickCallback",x,y,button
+        print(("onClickCallback",x,y,button))
         if button==4:
             self.zoomAtPoint(x,y,1.0/1.2)
         elif button==5:
@@ -423,7 +423,7 @@ class GraphCanvas(piddleGTK2p4.InteractiveCanvas):
             self.onOverCallback(self,x,y,button)
 
     def onOverCallback(self,canvas,x,y,button=0):
-        print "onOverCallback",x,y,button
+        print(("onOverCallback",x,y,button))
         if (self.selected_begin is None) and (button==1):
             self.selected_begin=(x,y)
 
@@ -577,23 +577,22 @@ if __name__=="__main__":
     world.setupFonts(canvas)
 
 
-    print "Read dom"
+    print("Read dom")
     dom=p4vasp.util.parseXML("vasprun1.xml")
-    print "OK"
+    print("OK")
     incar=p4vasp.Dictionary.Incar(dom.getElementsByTagName("incar")[0])
-    print "Incar resolved"
+    print("Incar resolved")
     dos=dom.getElementsByTagName("dos")[0]
     total=dos.getElementsByTagName("total")[0]
     total_array=p4vasp.Array.Array(total.getElementsByTagName("array")[0])
-    print "Total dos resolved"
+    print("Total dos resolved")
     partial=dos.getElementsByTagName("partial")[0]
     partial_array=p4vasp.Array.Array(partial.getElementsByTagName("array")[0])
-    print "Partial dos resolved"
+    print("Partial dos resolved")
 
-    total_dos_set=map(lambda x:(x[0],x[1]),total_array[0])
-    int_total_dos_set=map(lambda x:(x[0],x[2]),total_array[0])
-    ion0_dos     =map(lambda x:(x[0],x[1]+x[2]+x[3]+x[4]+x[5]+x[6]+x[7]+x[8]+x[9]),
-                   partial_array[0][0])
+    total_dos_set=[(x[0],x[1]) for x in total_array[0]]
+    int_total_dos_set=[(x[0],x[2]) for x in total_array[0]]
+    ion0_dos     =[(x[0],x[1]+x[2]+x[3]+x[4]+x[5]+x[6]+x[7]+x[8]+x[9]) for x in partial_array[0][0]]
 
 #  print "Datasets extracted"
 #  world=World()
@@ -619,7 +618,7 @@ if __name__=="__main__":
 
     world.viewAll()
 
-    print "World created"
+    print("World created")
 
     world.render(canvas)
     canvas.to_background_buffer()

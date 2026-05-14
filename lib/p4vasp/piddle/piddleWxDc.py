@@ -23,12 +23,12 @@ import p4vasp.piddle.piddle as piddle
 
 class PiddleWxDc(piddle.Canvas):
 
-    def __init__(self, aWxDc, size=(300,300), name="piddleWX"): 
+    def __init__(self, aWxDc, size=(300,300), name="piddleWX"):
         piddle.Canvas.__init__(self, size, name)
         self.dc = aWxDc
         self.dc.BeginDrawing()
 
-    def __del__(self): 
+    def __del__(self):
         self.dc.EndDrawing()
 
     def _getWXcolor(self, color, default = None):
@@ -56,7 +56,7 @@ class PiddleWxDc(piddle.Canvas):
           if default_color is not None:
             return self._getWXbrush(default_color)
           else:
-            raise "WXcanvas error:  Cannot create brush."
+            raise RuntimeError("WXcanvas error:  Cannot create brush.")
 
         return wxBrush(wxcolor)
 
@@ -75,7 +75,7 @@ class PiddleWxDc(piddle.Canvas):
           if default_color is not None:
             return self._getWXpen(width, default_color)
           else:
-            raise "WXcanvas error:  Cannot create pen."
+            raise RuntimeError("WXcanvas error:  Cannot create pen.")
 
         return wxPen(wxcolor, width)
 
@@ -87,17 +87,17 @@ class PiddleWxDc(piddle.Canvas):
         #  match them to individual fonts, this is difficult to do in a platform
         #  independant way
         if font.face is None or font.face == 'times':
-            family = wxDEFAULT 
+            family = wxDEFAULT
         elif font.face == 'courier' or font.face == 'monospaced':
-            family = wxMODERN 
+            family = wxMODERN
         elif font.face == 'helvetica' or font.face == 'sansserif':
-            family = wxSWISS 
+            family = wxSWISS
         elif font.face == 'serif' or font.face == 'symbol':
-            family = wxDEFAULT 
+            family = wxDEFAULT
         else:
             family = wxDEFAULT
-        weight = wxNORMAL 
-        style = wxNORMAL 
+        weight = wxNORMAL
+        style = wxNORMAL
         underline = 0
         if font.bold == 1:
             weight = wxBOLD
@@ -122,7 +122,7 @@ class PiddleWxDc(piddle.Canvas):
 
     def clear(self):
         self.dc.Clear()
-    
+
   #------------ string/font info ------------
 
     def stringWidth(self, s, font=None):
@@ -162,7 +162,7 @@ class PiddleWxDc(piddle.Canvas):
         '''Draw a string starting at location x,y.
         NOTE: the baseline goes on y; drawing covers (y-ascent,y+descent)
         Text rotation (angle%360 != 0) is not supported.'''
-        
+
         self._setWXfont(font)
 
         if color == piddle.transparent:
@@ -175,7 +175,7 @@ class PiddleWxDc(piddle.Canvas):
             wx_color = wxBLACK;
 
         self.dc.SetTextForeground(wx_color)
-            
+
         if '\n' in s or '\r' in s:
           #normalize line ends
           s = string.replace(s, '\r\n','\n')
@@ -194,10 +194,10 @@ class PiddleWxDc(piddle.Canvas):
     def _drawRotatedString(self, lines, x, y, font = None, color = None, angle=0):
 
         import math
-        
+
         # [kbj] Hack since the default system font may not be able to rotate.
         if font is None:
-          font = piddle.Font(face='helvetica')            
+          font = piddle.Font(face='helvetica')
           self._setWXfont(font)
 
         ascent = self.fontAscent(font)
@@ -212,17 +212,17 @@ class PiddleWxDc(piddle.Canvas):
         ly = y - c*ascent
 
         for i in range(0, len(lines)):
-          self.dc.DrawRotatedText(lines[i], lx + i*dx, ly + i*dy, angle) 
-        
+          self.dc.DrawRotatedText(lines[i], lx + i*dx, ly + i*dy, angle)
+
     # drawPolygon: For fillable shapes, edgeColor defaults to
     # self.defaultLineColor, edgeWidth defaults to self.defaultLineWidth, and
     # fillColor defaults to self.defaultFillColor.  Specify "don't fill" by
     # passing fillColor=transparent.
 
     def drawPolygon(self, pointlist, edgeColor=None, edgeWidth=None, fillColor=None, closed=0):
-        """drawPolygon(pointlist) -- draws a polygon 
+        """drawPolygon(pointlist) -- draws a polygon
         pointlist: a list of (x,y) tuples defining vertices
-        closed:    if 1, adds an extra segment connecting the last point 
+        closed:    if 1, adds an extra segment connecting the last point
             to the first
         """
 
@@ -236,7 +236,7 @@ class PiddleWxDc(piddle.Canvas):
         #  instead of just 2-tuples.  Therefore, pointlist must be re-created as
         #  only 2-tuples
 
-        pointlist = map(lambda i: tuple(i), pointlist)
+        pointlist = [tuple(i) for i in pointlist]
         if closed == 1:
             pointlist.append(pointlist[0])
 
@@ -260,11 +260,11 @@ class PiddleWxDc(piddle.Canvas):
         try:
             from PIL import Image
         except ImportError:
-            print 'PIL not installed as package'
+            print('PIL not installed as package')
             try:
                 import Image
             except ImportError:
-                raise "PIL not available!"
+                raise RuntimeError("PIL not available!")
 
         if (x2 and y2 and x2>x1 and y2>y1):
             imgPil = image.resize((x2-x1,y2-y1))

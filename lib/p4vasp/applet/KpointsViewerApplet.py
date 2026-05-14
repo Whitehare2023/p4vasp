@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -49,7 +49,7 @@ class KpointsViewerApplet(Applet,DynaListener):
         self.updateSystem()
 
     def dmenu(self,x):
-        print "MENU",x
+        print(("MENU",x))
         self.celltype = x
         self.updateSystem()
         return 0
@@ -57,7 +57,7 @@ class KpointsViewerApplet(Applet,DynaListener):
     def setExternalMode(self):
         pass
     def setEmbeddedMode(self):
-        raise "KpointsViewerApplet.setEmbeddedMode() not supported."
+        raise RuntimeError("KpointsViewerApplet.setEmbeddedMode() not supported.")
 
     def getPaint(self):
         if self.paint is None:

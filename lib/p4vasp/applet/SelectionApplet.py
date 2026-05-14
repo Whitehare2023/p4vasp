@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -33,9 +33,9 @@ class SelectionApplet(p4vasp.applet.Applet.Applet,SelectionListener):
         self.set=set
         self.setnone=setnone
     def setExternalMode(self):
-        raise "SelectionApplet.setExternalMode() not supported"
+        raise RuntimeError("SelectionApplet.setExternalMode() not supported")
     def createPanel(self):
-        raise "SelectionApplet.createPanel not supported"
+        raise RuntimeError("SelectionApplet.createPanel not supported")
     def isVisible(self):
         return 1
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 """Slightly modified PIDDLE canvas implementations for PyGTK.
 
 The real documentation is in piddleGTK.
@@ -22,7 +22,7 @@ def _pixels_per_point():
   """Return the number of pixels for each typographer's point."""
   #
   # This is a function instead of a computed constant so that we
-  # don't have to actually initialize _gkt, allowing the application 
+  # don't have to actually initialize _gkt, allowing the application
   # to control that if needed.  It simply needs to be done before
   # this can be used.
   #
@@ -36,7 +36,7 @@ class DrawableCanvas(piddle.Canvas):
     self.backgroundColor = piddle.white
     self.drawable=drawable
     piddle.Canvas.__init__(self)
-    self.gc = self.drawable.new_gc(foreground=None, background=None, font=None, 
+    self.gc = self.drawable.new_gc(foreground=None, background=None, font=None,
     function=-1, fill=-1, tile=None,
     stipple=None, clip_mask=None, subwindow_mode=-1,
     ts_x_origin=-1, ts_y_origin=-1, clip_x_origin=-1,
@@ -52,13 +52,13 @@ class DrawableCanvas(piddle.Canvas):
 
   def clear(self, background=None):
     if background is not None:
-      self.backgroundColor = background	
+      self.backgroundColor = background
     if self.backgroundColor == piddle.transparent:
       return
-    
+
     self.gc.set_foreground(self.get_color(self.backgroundColor))
     w,h=self.drawable.get_size()
-    
+
     self.drawable.draw_rectangle(self.gc,1,0,0,w,h)
 
   def flush(self):
@@ -101,12 +101,12 @@ class DrawableCanvas(piddle.Canvas):
     gc = self.gc
     gc.foreground = self.get_color(color)
     gc.line_width = width
-    self.drawable.draw_segments(gc, map(lambda x:tuple(map(int,x)),lineList))
+    self.drawable.draw_segments(gc, [tuple(map(int,x)) for x in lineList])
 
   def drawPolygon(self, pointlist, edgeColor=None, edgeWidth=None,
                   fillColor=None, closed=0):
     if len(pointlist) < 3:
-      raise ValueError, "too few points in the point list"
+      raise ValueError("too few points in the point list")
     # XXX lots more should be checked
     if edgeColor is None:
       edgeColor = self.defaultLineColor
@@ -173,7 +173,7 @@ class DrawableCanvas(piddle.Canvas):
       return c
 
 class DrawingAreaCanvas(DrawableCanvas):
-  def __init__(self, area=None):    
+  def __init__(self, area=None):
     if area is None:
       area=gtk.DrawingArea()
     self.area=area
@@ -183,7 +183,7 @@ class DrawingAreaCanvas(DrawableCanvas):
     self.pango_context=None
     self.__font_cache={}
 
-  def get_font_description(self,font):      
+  def get_font_description(self,font):
     s=font.face
     if s is None:
       s=""
@@ -196,7 +196,7 @@ class DrawingAreaCanvas(DrawableCanvas):
     s+=" "+str(font.size)
     return s
 
-  def getFontDescription(self,font):      
+  def getFontDescription(self,font):
     return pango.FontDescription(self.get_font_description(font))
 
   def getFont(self, font):
@@ -204,13 +204,13 @@ class DrawingAreaCanvas(DrawableCanvas):
       return self.__font_cache[font]
     except KeyError:
       if self.pango_context is None:
-        self.pango_context=self.area.get_pango_context()      
+        self.pango_context=self.area.get_pango_context()
       f=self.pango_context.load_font(self.getFontDescription(font))
       self.__font_cache[font] = f
       return f
 
   def createPangoMarkup(self, s,font=None, color=None):
-    if color is None:	  
+    if color is None:
       color = self.defaultLineColor
       if color == piddle.transparent:
         return None
@@ -226,10 +226,10 @@ class DrawingAreaCanvas(DrawableCanvas):
   def drawString(self, s, x, y, font=None, color=None, angle=0.0):
     angle = int(round(angle))
     if angle != 0:
-        raise NotImplementedError, "rotated text not implemented"
+        raise NotImplementedError("rotated text not implemented")
     gc = self.gc
     if self.pango_context is None:
-      self.pango_context=self.area.get_pango_context()          
+      self.pango_context=self.area.get_pango_context()
     layout=pango.Layout(self.pango_context)
     layout.set_markup(self.createPangoMarkup(s,font,color))
     w,h=layout.get_pixel_size()
@@ -242,7 +242,7 @@ class DrawingAreaCanvas(DrawableCanvas):
 
   def fontAscent(self, font=None):
     if font is None:
-        font = self.defaultFont        
+        font = self.defaultFont
     return self.getFont(font).get_metrics().get_ascent()
 
   def fontDescent(self, font=None):
@@ -254,7 +254,7 @@ class DrawingAreaCanvas(DrawableCanvas):
     if font is None:
         font = self.defaultFont
     if self.pango_context is None:
-      self.pango_context=self.area.get_pango_context()          	
+      self.pango_context=self.area.get_pango_context()
     layout=pango.Layout(self.pango_context)
     layout.set_markup(self.createPangoMarkup(s,font))
     return layout.get_pixel_size()[0]
@@ -262,7 +262,7 @@ class DrawingAreaCanvas(DrawableCanvas):
     if font is None:
         font = self.defaultFont
     if self.pango_context is None:
-      self.pango_context=self.area.get_pango_context()          	
+      self.pango_context=self.area.get_pango_context()
     layout=pango.Layout(self.pango_context)
     layout.set_markup(self.createPangoMarkup(s,font))
     return layout.get_pixel_size()[1]
@@ -274,8 +274,8 @@ class DrawingAreaCanvas(DrawableCanvas):
     layout=pango.Layout(self.pango_context)
     layout.set_markup(self.createPangoMarkup(s,font))
     return layout.get_pixel_size()
-      
-    
+
+
 class BasicCanvas(DrawingAreaCanvas):
   def __init__(self, area=None):
     DrawingAreaCanvas.__init__(self,area)
@@ -296,7 +296,7 @@ class BasicCanvas(DrawingAreaCanvas):
     return 1
 
   def flush(self):
-    w,h=self.drawable.get_size()  
+    w,h=self.drawable.get_size()
     self.area_drawable().draw_drawable(self.gc,self.drawable,0,0,0,0,w,h)
 
   def ensure_size(self, width, height):
@@ -352,7 +352,7 @@ class BasicCanvas(DrawingAreaCanvas):
       b = self.ensure_size(event.x + event.width, event.y + event.height)
       width, height = self.drawable.get_size()
       if hasattr(self,"resizeCallback"):
-	self.resizeCallback(event.width,event.height)
+          self.resizeCallback(event.width,event.height)
 
   def __expose_event(self, area, event):
 #      print "expose event"
@@ -364,14 +364,14 @@ class BasicCanvas(DrawingAreaCanvas):
 class InteractiveCanvas(BasicCanvas):
     def __init__(self, area, window):
         BasicCanvas.__init__(self, area)
-	window=area.get_toplevel()
-	self.window=window
+        window=area.get_toplevel()
+        self.window=window
         # XXX set up the event handlers
-	
+
 #        self.initEvents()
 #        self.area.connect("event", self.__event)
         self.__get_allocation = area.get_allocation
-	self.__button=0
+        self.__button=0
 
     def initEvents(self):
       event_mask=    (  gtk.gdk.BUTTON_PRESS_MASK
@@ -393,12 +393,12 @@ class InteractiveCanvas(BasicCanvas):
 #	x.realize()
 #        x.set_events(gtk.gdk.ALL_EVENTS_MASK)
 #	x=x.get_parent()
-	
+
     def isInteractive(self):
         return 1
 
     def __event(self, widget, event):
-        print "EVENT",event.type
+        print("EVENT",event.type)
         if event.type == gtk.gdk.ENTER_NOTIFY:
             x, y, ok = self.__check_coords(event.x, event.y)
             if ok:
@@ -409,13 +409,13 @@ class InteractiveCanvas(BasicCanvas):
             if ok:
                 self.onOver(self, x, y, self.__button)
         elif event.type == gtk.gdk.BUTTON_PRESS:
-	    self.__button=event.button
+            self.__button=event.button
             x, y = widget.get_pointer()
             x, y, ok = self.__check_coords(x, y)
             if ok:
                 self.onOver(self, x, y,event.button)
         elif (event.type in [gtk.gdk.BUTTON_RELEASE]):
-	    self.__button=0
+            self.__button=0
             x, y, ok = self.__check_coords(event.x, event.y)
             if ok:
                 self.onClick(self, x, y, event.button)
@@ -480,17 +480,17 @@ class InteractiveBoxCanvas(BasicCanvas):
     def __init__(self, box):
 #	self.i=0
         self.box=box
-	self.area=None
-        self.initEvents()	
+        self.area=None
+        self.initEvents()
         BasicCanvas.__init__(self, self.area)
 #	window=area.get_toplevel()
 #	self.window=window
 #        self.area.connect("event", self.__event)
         self.__get_allocation = self.area.get_allocation
-	self.__button=0
+        self.__button=0
 
     def initEvents(self):
-      print "initEvents"
+      print("initEvents")
       if self.area is not None:
         self.area.destroy()
 #        self.box.remove(self.area)
@@ -515,13 +515,13 @@ class InteractiveBoxCanvas(BasicCanvas):
 #      x.set_events(event_mask)
 #      x.connect("event", self.__event)
 ##      x.connect("motion_notify_event", self.__event)
- 
-	
+
+
     def isInteractive(self):
         return 1
 
     def __event(self, widget, event):
-        print "EVENT",event.type
+        print("EVENT",event.type)
         if event.type == gtk.gdk.ENTER_NOTIFY:
             x, y, ok = self.__check_coords(event.x, event.y)
             if ok:
@@ -532,13 +532,13 @@ class InteractiveBoxCanvas(BasicCanvas):
             if ok:
                 self.onOver(self, x, y, self.__button)
         elif event.type == gtk.gdk.BUTTON_PRESS:
-	    self.__button=event.button
+            self.__button=event.button
             x, y = widget.get_pointer()
             x, y, ok = self.__check_coords(x, y)
             if ok:
                 self.onOver(self, x, y,event.button)
         elif (event.type in [gtk.gdk.BUTTON_RELEASE]):
-	    self.__button=0
+            self.__button=0
             x, y, ok = self.__check_coords(event.x, event.y)
             if ok:
                 self.onClick(self, x, y, event.button)
@@ -713,14 +713,14 @@ def test():
   return gtk.FALSE
 def test1():
   global d
-  gc = d.window.new_gc(foreground=None, background=None, font=None, 
+  gc = d.window.new_gc(foreground=None, background=None, font=None,
                             function=-1, fill=-1, tile=None,
                             stipple=None, clip_mask=None, subwindow_mode=-1,
                             ts_x_origin=-1, ts_y_origin=-1, clip_x_origin=-1,
                             clip_y_origin=-1, graphics_exposures=-1,
                             line_width=-1, line_style=-1, cap_style=-1,
                             join_style=-1)
-  d.window.draw_line(gc,0,0,100,100)			  
+  d.window.draw_line(gc,0,0,100,100)
   return gtk.FALSE
 def test2():
   global c
@@ -745,14 +745,14 @@ if __name__=="__main__":
   box.add(d)
   c=BasicCanvas(d)
   win.show_all()
-  gc = d.window.new_gc(foreground=None, background=None, font=None, 
+  gc = d.window.new_gc(foreground=None, background=None, font=None,
                             function=-1, fill=-1, tile=None,
                             stipple=None, clip_mask=None, subwindow_mode=-1,
                             ts_x_origin=-1, ts_y_origin=-1, clip_x_origin=-1,
                             clip_y_origin=-1, graphics_exposures=-1,
                             line_width=-1, line_style=-1, cap_style=-1,
                             join_style=-1)
-  #d.window.draw_line(gc,0,0,100,100)			  
+  #d.window.draw_line(gc,0,0,100,100)
   win.show_all()
   gtk.idle_add(test2)
   gtk.main()

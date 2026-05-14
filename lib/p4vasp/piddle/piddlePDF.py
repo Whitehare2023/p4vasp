@@ -16,7 +16,7 @@ self.pdf which offers numerous lower-level drawing routines.
 
 #standard python library modules
 import string
-import cStringIO
+import io
 import p4vasp.piddle.pdfmetrics as pdfmetrics
 import glob
 import os
@@ -54,34 +54,34 @@ font_face_map = {
 #maps a piddle font to a postscript one.
 ps_font_map = {
             #face, bold, italic -> ps name
-            ('times', 0, 0) :'Times-Roman', 
-            ('times', 1, 0) :'Times-Bold', 
-            ('times', 0, 1) :'Times-Italic', 
-            ('times', 1, 1) :'Times-BoldItalic', 
+            ('times', 0, 0) :'Times-Roman',
+            ('times', 1, 0) :'Times-Bold',
+            ('times', 0, 1) :'Times-Italic',
+            ('times', 1, 1) :'Times-BoldItalic',
 
-            ('courier', 0, 0) :'Courier', 
-            ('courier', 1, 0) :'Courier-Bold', 
-            ('courier', 0, 1) :'Courier-Oblique', 
-            ('courier', 1, 1) :'Courier-BoldOblique', 
-            
-            ('helvetica', 0, 0) :'Helvetica', 
-            ('helvetica', 1, 0) :'Helvetica-Bold', 
-            ('helvetica', 0, 1) :'Helvetica-Oblique', 
-            ('helvetica', 1, 1) :'Helvetica-BoldOblique', 
+            ('courier', 0, 0) :'Courier',
+            ('courier', 1, 0) :'Courier-Bold',
+            ('courier', 0, 1) :'Courier-Oblique',
+            ('courier', 1, 1) :'Courier-BoldOblique',
 
-            # there is only one Symbol font            
-            ('symbol', 0, 0) :'Symbol', 
-            ('symbol', 1, 0) :'Symbol', 
-            ('symbol', 0, 1) :'Symbol', 
-            ('symbol', 1, 1) :'Symbol', 
+            ('helvetica', 0, 0) :'Helvetica',
+            ('helvetica', 1, 0) :'Helvetica-Bold',
+            ('helvetica', 0, 1) :'Helvetica-Oblique',
+            ('helvetica', 1, 1) :'Helvetica-BoldOblique',
+
+            # there is only one Symbol font
+            ('symbol', 0, 0) :'Symbol',
+            ('symbol', 1, 0) :'Symbol',
+            ('symbol', 0, 1) :'Symbol',
+            ('symbol', 1, 1) :'Symbol',
 
             # ditto for dingbats
-            ('zapfdingbats', 0, 0) :'ZapfDingbats', 
-            ('zapfdingbats', 1, 0) :'ZapfDingbats', 
-            ('zapfdingbats', 0, 1) :'ZapfDingbats', 
-            ('zapfdingbats', 1, 1) :'ZapfDingbats', 
+            ('zapfdingbats', 0, 0) :'ZapfDingbats',
+            ('zapfdingbats', 1, 0) :'ZapfDingbats',
+            ('zapfdingbats', 0, 1) :'ZapfDingbats',
+            ('zapfdingbats', 1, 1) :'ZapfDingbats',
       }
-            
+
 ######################################################################
 #
 #     Canvas class
@@ -89,7 +89,7 @@ ps_font_map = {
 ######################################################################
 
 class PDFCanvas(Canvas):
-    """This works by accumulating a list of strings containing 
+    """This works by accumulating a list of strings containing
     PDF page marking operators, as you call its methods.  We could
     use a big string but this is more efficient - only concatenate
     it once, with control over line ends.  When
@@ -109,37 +109,37 @@ class PDFCanvas(Canvas):
         self.pdf = pdfgen.Canvas(name, pagesize=pagesize, bottomup=0)  # add pagesize to constructor
         # by default do not use comrpression (mod by cwl, may not be necessary w/ newer pdfgen)
         self.pdf.setPageCompression(0)
-        
+
         self.pdf.setLineCap(2)
         #now call super init, which will trigger
         #calls into self.pdf
-        
+
         Canvas.__init__(self, size=size,name=name)
 
         #memorize stuff
         self.pagesize = pagesize
         self.filename = name
-               
-        # self.pdf.setPageSize(pagesize) # This doesn't seem to work correctly -cwl 
+
+        # self.pdf.setPageSize(pagesize) # This doesn't seem to work correctly -cwl
         if size == None:
             #take the page size, which might not be default
             self.drawingsize = self.pagesize
         else:
             #convenience for other platformslike GUI views
-            #we let them centre a smaller drawing in a page            
-            self.drawingsize = size  
+            #we let them centre a smaller drawing in a page
+            self.drawingsize = size
 
         self.pageTransitionString = ''
         self.pageNumber = 1   # keep a count
-               
+
         #if they specified a size smaller than page,
         # be helpful and centre their diagram
-        if self.pagesize <> self.drawingsize:
+        if self.pagesize != self.drawingsize:
             dx = 0.5 * (self.pagesize[0] - self.drawingsize[0])
             dy = 0.5 * (self.pagesize[1] - self.drawingsize[1])
             self.pdf.translate(dx, dy)
 
-        
+
     def _resetDefaults(self):
         """Only used in setup - persist from page to page"""
         self.defaultLineColor = black
@@ -147,8 +147,8 @@ class PDFCanvas(Canvas):
         self.defaultLineWidth = 1
         self.defaultFont = Font()
         self.pdf.setLineCap(2)
-        
-        
+
+
     def showPage(self):
         """ensure basic settings are the same after a page break"""
         self.pdf.showPage()
@@ -158,7 +158,7 @@ class PDFCanvas(Canvas):
         self.defaultLineWidth = self.defaultLineWidth
         self.pdf.setLineCap(2)
 
-        
+
     #------------ canvas capabilities -------------
     def isInteractive(self):
         return 0
@@ -176,14 +176,14 @@ class PDFCanvas(Canvas):
 
     def save(self, file=None, format=None):
         """Saves the file.  If holding data, do
-        a showPage() to save them having to.""" 
+        a showPage() to save them having to."""
 
         if self.pdf.pageHasData():
             self.pdf.showPage()
-            
+
         if hasattr(file, 'write'):
             self.pdf.save(fileobj=file)
-        elif isinstance(file, types.StringType):
+        elif isinstance(file, str):
             self.pdf.save(filename=file)
         else:
             self.pdf.save()
@@ -208,26 +208,26 @@ class PDFCanvas(Canvas):
             self._updateFillColor(value)
         elif key == "defaultFont":
             self._updateFont(value)
-            
-        
-        
+
+
+
     def _updateLineColor(self, color):
         """Triggered when someone assigns to defaultLineColor"""
         self.pdf.setStrokeColorRGB(color.red, color.green, color.blue)
-        
+
     def _updateFillColor(self, color):
         """Triggered when someone assigns to defaultFillColor"""
         self.pdf.setFillColorRGB(color.red, color.green, color.blue)
-        
+
     def _updateLineWidth(self, width):
         """Triggered when someone assigns to defaultLineWidth"""
         self.pdf.setLineWidth(width)
-        
+
     def _updateFont(self, font):
         """Triggered when someone assigns to defaultFont"""
         psfont = self._findPostScriptFontName(font)
         self.pdf.setFont(psfont, font.size)
-        
+
     def _findPostScriptFontName(self, font):
         """Attempts to return proper font name."""
 
@@ -236,21 +236,21 @@ class PDFCanvas(Canvas):
             face = 'serif'
         else:
             face = string.lower(font.face)
-        while font_face_map.has_key(face):
+        while face in font_face_map:
             face = font_face_map[face]
         #step 2, - resolve bold/italic to get the right PS font name
         psname = ps_font_map[(face, font.bold, font.italic)]
         return psname
-    
 
 
-    
+
+
     def _escape(self, s):
         """PDF escapes are like Python ones, but brackets need slashes before them too.
         Use Python's repr function and chop off the quotes first"""
         s = repr(s)[1:-1]
-        s = string.replace(s, '(','\(')
-        s = string.replace(s, ')','\)')
+        s = string.replace(s, '(','\\(')
+        s = string.replace(s, ')','\\)')
         return s
 
     def resetDefaults(self):
@@ -263,7 +263,7 @@ class PDFCanvas(Canvas):
         self.defaultFillColor = self.defaultFillColor
         self.defaultLineWidth = self.defaultLineWidth
     #------------ string/font info ------------
-        
+
     def stringWidth(self, s, font=None):
         "Return the logical width of the string if it were drawn \
         in the current font (defaults to self.font)."
@@ -283,7 +283,7 @@ class PDFCanvas(Canvas):
             font = self.defaultFont
         fontname = self._findPostScriptFontName(font)
         return pdfmetrics.ascent_descent[fontname][0] * 0.001 * font.size
-        
+
     def fontDescent(self, font=None):
         if not font:
             font = self.defaultFont
@@ -305,13 +305,13 @@ class PDFCanvas(Canvas):
         else:
             self.pdf.drawPath(
                         path,
-                        (edge <> transparent),  #whether to stroke
-                        (fill <> transparent)   #whether to fill
+                        (edge != transparent),  #whether to stroke
+                        (fill != transparent)   #whether to fill
                         )
-        
+
     #------------- drawing methods --------------
 
-   
+
     def drawLine(self, x1,y1, x2,y2, color=None, width=None):
         """Calls the underlying methods in pdfgen.canvas.  For the
         highest performance, use canvas.setDefaultFont and
@@ -331,7 +331,7 @@ class PDFCanvas(Canvas):
             self._updateLineColor(self.defaultLineColor)
         if width:
             self._updateLineWidth(self.defaultLineWidth)
-        
+
 
     def drawLines(self, lineList, color=None, width=None):
         """Draws several distinct lines, all with same color
@@ -342,13 +342,13 @@ class PDFCanvas(Canvas):
             self._updateLineWidth(width)
 
         self.pdf.lines(lineList)
-        
+
         if color:
             self._updateLineColor(self.defaultLineColor)
         if width:
             self._updateLineWidth(self.defaultLineWidth)
-        
-    
+
+
     def drawString(self, s, x, y, font=None, color=None, angle=0):
         """As it says, but many options to process.  It translates
         user space rather than text space, in case underlining is
@@ -366,17 +366,17 @@ class PDFCanvas(Canvas):
                 lines = [s]
             fnt = font or self.defaultFont
             self._updateFont(fnt)
-            text = self.pdf._escape(s)   
+            text = self.pdf._escape(s)
 
             # start of Chris's hacking
             # inserting basic commands here  to see if can get working
             textobj = self.pdf.beginText()
 
-            if col <> self.defaultFillColor:
+            if col != self.defaultFillColor:
                 textobj.setFillColorRGB(col.red,col.green, col.blue)
 
             if angle != 0 :
-                co = cos(angle * pi / 180.0) 
+                co = cos(angle * pi / 180.0)
                 si = sin(angle * pi / 180.0)
                 textobj.setTextTransform(co, -si, si, co, x, y)  #top down coords so reverse angle
             else :
@@ -386,7 +386,7 @@ class PDFCanvas(Canvas):
                 #keep underlining separate - it is slow and unusual anyway
                 if fnt.underline:
                     #breaks on angled text - FIXME
-                    ycursor = textobj.getY() # returns offset from last set origin 
+                    ycursor = textobj.getY() # returns offset from last set origin
                     dy = 0.5 * self.fontDescent(fnt)
                     width = self.stringWidth(line, fnt)
                     linewidth = fnt.size * 0.1
@@ -396,8 +396,8 @@ class PDFCanvas(Canvas):
                     self.pdf.translate(x,y) # need to translate first before rotate
                     if angle != 0 :
                         self.pdf.rotate(-angle)
-                    self.pdf.translate(0, ycursor-y) #move down to start of current text line 
-                    self.pdf.line(0,dy, width, dy) 
+                    self.pdf.translate(0, ycursor-y) #move down to start of current text line
+                    self.pdf.line(0,dy, width, dy)
                     self.pdf.restoreState()
                     lasty = ycursor
                 textobj.textLine(line) # adds text to textobj, advances getY's cursor
@@ -405,7 +405,7 @@ class PDFCanvas(Canvas):
             self.pdf.drawText(textobj)  # draw all the text afterwards? Doesn't seem right
         self.pdf.addLiteral('%end drawString')
         # done wth drawString()
-        
+
     def drawCurve(self, x1, y1, x2, y2, x3, y3, x4, y4,
                   edgeColor=None, edgeWidth=None, fillColor=None, closed=0):
         """This could do two totally different things.  If not closed,
@@ -424,7 +424,7 @@ class PDFCanvas(Canvas):
             p.curveTo(x2, y2, x3, y3, x4, y4)
             p.close()
             self._endPath(p, edgeColor, fillColor) #handles case of transparency
-            
+
             if edgeColor:
                 self._updateLineColor(self.defaultLineColor)
             if edgeWidth:
@@ -437,15 +437,15 @@ class PDFCanvas(Canvas):
                 self._updateLineColor(edgeColor)
             if edgeWidth:
                 self._updateLineWidth(edgeWidth)
-            
+
             self.pdf.bezier(x1, y1, x2, y2, x3, y3, x4, y4)
 
             if edgeColor:
                 self._updateLineColor(self.defaultLineColor)
             if edgeWidth:
                 self._updateLineWidth(self.defaultLineWidth)
-            
-    def drawRect(self, x1, y1, x2, y2, edgeColor=None, 
+
+    def drawRect(self, x1, y1, x2, y2, edgeColor=None,
             edgeWidth=None, fillColor=None):
         if edgeColor:
             self._updateLineColor(edgeColor)
@@ -457,14 +457,14 @@ class PDFCanvas(Canvas):
         p = self.pdf.beginPath()
         p.rect(x1, y1, x2-x1, y2-y1)
         self._endPath(p, edgeColor, fillColor) #handles case of transparency
-        
+
         if edgeColor:
             self._updateLineColor(self.defaultLineColor)
         if edgeWidth:
             self._updateLineWidth(self.defaultLineWidth)
         if fillColor:
             self._updateFillColor(self.defaultFillColor)
-    
+
     #drawRoundRect is inherited - cannot really improve on that one,
     #and figures are quite efficient now.
     def drawEllipse(self, x1,y1, x2,y2, edgeColor=None, edgeWidth=None, fillColor=None):
@@ -478,14 +478,14 @@ class PDFCanvas(Canvas):
         p = self.pdf.beginPath()
         p.ellipse(x1, y1, x2-x1, y2-y1)
         self._endPath(p, edgeColor, fillColor) #handles case of transparency
-        
+
         if edgeColor:
             self._updateLineColor(self.defaultLineColor)
         if edgeWidth:
             self._updateLineWidth(self.defaultLineWidth)
         if fillColor:
             self._updateFillColor(self.defaultFillColor)
-    
+
     def drawArc(self, x1,y1, x2,y2, startAng=0, extent=90, edgeColor=None,
                 edgeWidth=None, fillColor=None):
         """This draws a PacMan-type shape connected to the centre.  One
@@ -505,7 +505,7 @@ class PDFCanvas(Canvas):
         x_cen = 0.5 * (x1 + x2)
         y_cen = 0.5 * (y1 + y2)
 
-        #first the fill                
+        #first the fill
         p = self.pdf.beginPath()
         p.moveTo(x_cen, y_cen)
         p.lineTo(start[0], start[1])
@@ -519,17 +519,17 @@ class PDFCanvas(Canvas):
         for curve in pointList:
             p2.curveTo(curve[2], curve[3], curve[4], curve[5], curve[6], curve[7])
         self._endPath(p2, edgeColor, transparent) #handles case of transparency
-        
-        
+
+
         if edgeColor:
             self._updateLineColor(self.defaultLineColor)
         if edgeWidth:
             self._updateLineWidth(self.defaultLineWidth)
         if fillColor:
             self._updateFillColor(self.defaultFillColor)
-    
 
-    def drawPolygon(self, pointlist, edgeColor=None, 
+
+    def drawPolygon(self, pointlist, edgeColor=None,
             edgeWidth=None, fillColor=None, closed=0):
         """As it says.  Easy with paths!"""
         if edgeColor:
@@ -545,9 +545,9 @@ class PDFCanvas(Canvas):
             p.lineTo(point[0], point[1])
         if closed:
             p.close()
-        
+
         self._endPath(p, edgeColor, fillColor) #handles case of transparency
-        
+
         if edgeColor:
             self._updateLineColor(self.defaultLineColor)
         if edgeWidth:
@@ -562,7 +562,7 @@ class PDFCanvas(Canvas):
 ##        points are not connected but closed=1, then you get the full shape
 ##        filled but the final line segment does not join up.  I have to
 ##        do extra work to simulate this."""
-##        
+##
 ##        if edgeColor:
 ##            self._updateLineColor(edgeColor)
 ##        if edgeWidth:
@@ -578,7 +578,7 @@ class PDFCanvas(Canvas):
 ##        end = None
 ##        p1.moveTo(start[0], start[1])
 ##        p2.moveTo(start[0], start[1])
-##        
+##
 ##        for tuple in partList:
 ##            op = tuple[0]
 ##            args = list(tuple[1:])
@@ -587,8 +587,8 @@ class PDFCanvas(Canvas):
 ##            if start <> end:
 ##                p1.lineTo(start[0], start[1])
 ##                p2.lineTo(start[0], start[1])
-##                
-##            #now draw appropriate segment           
+##
+##            #now draw appropriate segment
 ##            if op == figureLine:
 ##                p1.lineTo(args[2], args[3])
 ##                p2.lineTo(args[2], args[3])
@@ -613,10 +613,10 @@ class PDFCanvas(Canvas):
 ##            print 'closed edge path'
 ##        print 'inner path p1:' + p1.getCode()
 ##        print 'outer path p2:' + p2.getCode()
-##        
+##
 ##        self._endPath(p1, transparent, fillColor)
 ##        self._endPath(p2, edgeColor, transparent)
-##        
+##
 ##        if edgeColor:
 ##            self._updateLineColor(self.defaultLineColor)
 ##        if edgeWidth:
@@ -624,35 +624,35 @@ class PDFCanvas(Canvas):
 ##        if fillColor:
 ##            self._updateFillColor(self.defaultFillColor)
 
-        
+
     def drawImage(self, image, x1,y1, x2=None,y2=None):
         """Draw a PIL Image or image filename into the specified rectangle.
         If x2 and y2 are omitted, they are calculated from the image size.
         """
         # chris starts meddling here -cwl
-        # piddle only takes PIL images 
+        # piddle only takes PIL images
         im_width, im_height = image.size
         if not x2 :
             x2 = x1 + im_width
         if not y2 :
             y2 = y1 + im_height
-            
+
         self.pdf.saveState()  # I'm changing coordinates to isolate the problem -cwl
 
         self.pdf.translate(x1,y1)
         self.pdf.drawInlineImage(image, 0, 0, abs(x1-x2), abs(y1-y2))
 
         self.pdf.restoreState()
-        
+
         ### original code below -cwl
-        #the underlying canvas uses a bott-up coord system, so flips things        
+        #the underlying canvas uses a bott-up coord system, so flips things
         #if x2:
             #width = abs(x2 - x1)
             #x = min(x1, x2)
         #if y2:
             #height = abs(y2 - y1)
             #y = min(y1, y2)
-        #self.pdf.drawInlineImage(image, x, y, width, height)        
+        #self.pdf.drawInlineImage(image, x, y, width, height)
 
 
 ##########################################################

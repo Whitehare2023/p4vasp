@@ -1,8 +1,8 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 from string import *
 from glob import glob
 import os.path
-from UserList import *
+from collections import *
 import re
 
 class PotcarRecord:
@@ -62,9 +62,9 @@ class PotcarRecord:
         self.title=strip(h[0])
         self.table=self.parseDescriptionTable(h)
 
-        print p
-        print self.params
-        print
+        print(p)
+        print((self.params))
+        print()
 
     def parseFloatParam(self,s):
         m=self.fpp.search(s)
@@ -161,7 +161,7 @@ class PotcarDatabase(UserList):
         if type(f)==type(""):
             f=open(f)
             closeflag=1
-        v=filter(lambda x:len(x) and x[0]!="#",split(f.read(),"\n"))
+        v=[x for x in split(f.read(),"\n") if len(x) and x[0]!="#"]
         for x in v:
             r=PotcarRecord()
             r.parseLine(x)

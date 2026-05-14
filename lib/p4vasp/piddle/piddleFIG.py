@@ -363,7 +363,7 @@ class FIGCanvas(Canvas):
 
     def clear(self):
         """Reset canvas to its default state."""
-        raise NotImplementedError, "clear"
+        raise NotImplementedError("clear")
 
     def save(self, file=None, format=None):
         """Write the current document to a file or stream and close the file.
@@ -413,7 +413,7 @@ class FIGCanvas(Canvas):
         self._drawPolygon(pointlist, color, width, self.defaultFillColor, 0,
                           self.NotFilled)
 
-    def drawPolygon(self, pointlist, 
+    def drawPolygon(self, pointlist,
                     edgeColor=None, edgeWidth=None, fillColor=None, closed=0):
         """Draw a set of joined-up line segments.
 
@@ -436,7 +436,7 @@ class FIGCanvas(Canvas):
         self._drawPolygon(pointlist, edgeColor, edgeWidth, fillColor, closed,
                           self.Filled)
 
-    def _drawPolygon(self, pointlist, 
+    def _drawPolygon(self, pointlist,
                      edgeColor, edgeWidth, fillColor, closed,
                      filled):
         if closed:
@@ -472,7 +472,7 @@ class FIGCanvas(Canvas):
             }
         self.code.append(code)
         line = []
-        pointlist = map(lambda p, f=bp: (p[0]*bp, p[1]*bp), pointlist)
+        pointlist = list(map(lambda p, f=bp: (p[0]*bp, p[1]*bp), pointlist))
         for coords in pointlist:
             code = self.coord_fmt % coords
             line.append(code)
@@ -537,7 +537,7 @@ class FIGCanvas(Canvas):
         self.code.append(code)
         code = []
         pointlist = [(x1, y1), (x1, y2), (x2, y2), (x2, y1), (x1, y1)]
-        pointlist = map(lambda p, f=bp: (p[0]*bp, p[1]*bp), pointlist)
+        pointlist = list(map(lambda p, f=bp: (p[0]*bp, p[1]*bp), pointlist))
         for coords in pointlist:
             code.append(self.coord_fmt % coords)
         code = " ".join(code)

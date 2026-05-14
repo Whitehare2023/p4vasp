@@ -40,19 +40,20 @@ contains classes for dictionary-like objects:
 
 """
 
-from UserDict import *
-from UserList import *
+from collections import UserDict, UserList
+from collections import *
 from string import *
 from sys import *
 from p4vasp.matrix import *
 from p4vasp import *
 from p4vasp.util import *
 from types import *
+from functools import reduce
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 
 class Dictionary(UserDict,ToXMLHelper):
@@ -89,8 +90,8 @@ class Dictionary(UserDict,ToXMLHelper):
             self.name=name
         if (type(data) is DictionaryType) or isinstance(data,UserDict):
             UserDict.__init__(self,data)
-            for k,v in data.items():
-                if not self.type.has_key(k):
+            for k,v in list(data.items()):
+                if k not in self.type:
                     self.type[k]=guessType(v)
         else:
             UserDict.__init__(self)
@@ -121,7 +122,7 @@ class Dictionary(UserDict,ToXMLHelper):
     def __str__(self):
         """String representation."""
         s="Dictionary %s:\n"%self.name
-        for k in self.keys():
+        for k in list(self.keys()):
             s+="  %-10s %-10s = %s\n"%(self.getFieldType(k),k,str(self[k]))
         return s
 
@@ -131,7 +132,7 @@ class Dictionary(UserDict,ToXMLHelper):
         in0  =indent*INDENT
         in1 =(indent+1)*INDENT
         f.write("%s<%s>\n"%(in0,self.name))
-        for key in self.keys():
+        for key in list(self.keys()):
             value=self[key]
             t=self.getFieldType(key)
             if isArray(value):
@@ -205,7 +206,7 @@ class StructuredDictionary(Dictionary,ToXMLHelper):
                         name="???"
                 Dictionary.__init__(self,data.data,name=name)
                 self.type=data.type.copy()
-                self.subgroup=map(lambda x:StructuredDictionary(x),data.subgroup)
+                self.subgroup=[StructuredDictionary(x) for x in data.subgroup]
                 self.groupname=data.groupname
             else:
                 Dictionary.__init__(self,data,name=name)
@@ -232,7 +233,7 @@ class StructuredDictionary(Dictionary,ToXMLHelper):
         if n is None:
             n=""
         s="StructuredDictionary <%s> %s:\n"%(self.name,n)
-        for k in self.keys():
+        for k in list(self.keys()):
             s+="  %-10s %-10s = %s\n"%(self.getFieldType(k),k,str(self[k]))
         for x in self.subgroup:
             s+="  group %s\n"%x
@@ -248,7 +249,7 @@ class StructuredDictionary(Dictionary,ToXMLHelper):
             f.write('%s<%s>\n'%(in0,self.name))
         else:
             f.write('%s<%s name="%s">\n'%(in0,self.name,self.groupname))
-        for key in self.data.keys():
+        for key in list(self.data.keys()):
             value=self.data[key]
             t=self.getFieldType(key)
             if isArray(value):
@@ -283,7 +284,7 @@ class StructuredDictionary(Dictionary,ToXMLHelper):
 
     def getSubgroupForKey(self,key):
         "Get subgroup containing the *key* directly."
-        if key in self.data.keys():
+        if key in list(self.data.keys()):
             return self
         for x in self.subgroup:
             try:
@@ -300,11 +301,11 @@ class StructuredDictionary(Dictionary,ToXMLHelper):
         else:
             return cmp(self.getAllData(),dict)
     def __len__(self):
-        l=map(len,self.subgroup)
+        l=list(map(len,self.subgroup))
         return len(self.data)+reduce(lambda x,y:x+y,l)
 
     def __getitem__(self,key):
-        if self.data.has_key(key):
+        if key in self.data:
             return self.data[key]
         for x in self.subgroup:
             try:
@@ -337,41 +338,41 @@ class StructuredDictionary(Dictionary,ToXMLHelper):
             raise KeyError(key)
 
     def keys(self):
-        k=self.data.keys()
+        k=list(self.data.keys())
         for x in self.subgroup:
-            k.extend(filter(lambda x,k=k:x not in k,x.keys()))
+            k.extend(list(filter(lambda x,k=k:x not in k,list(x.keys()))))
         return k
 
     def values(self):
-        k=self.data.values()
+        k=list(self.data.values())
         for x in self.subgroup:
-            k.extend(x.values())
+            k.extend(list(x.values()))
         return k
 
     def items(self):
-        return self.getAllData().items()
+        return list(self.getAllData().items())
 
     def iteritems(self):
-        raise "Not implemented yet."
+        raise RuntimeError("Not implemented yet.")
     def iterkeys(self):
-        raise "Not implemented yet."
+        raise RuntimeError("Not implemented yet.")
     def itervalues(self):
-        raise "Not implemented yet."
+        raise RuntimeError("Not implemented yet.")
 
     def has_key(self,key):
-        if self.data.has_key(key):
+        if key in self.data:
             return 1
         for x in self.subgroup:
-            if x.has_key(key):
+            if key in x:
                 return 1
         return 0
 
     def update(self,dict):
-        for k,v in dict.items():
+        for k,v in list(dict.items()):
             self[k]=v
 
     def popitem(self):
-        raise "Not implemented yet."
+        raise RuntimeError("Not implemented yet.")
 
     def __contains__(self,key):
         if key in self.data:
@@ -384,10 +385,10 @@ class StructuredDictionary(Dictionary,ToXMLHelper):
     def getFieldType(self,key):
         "Gets the type of the field *key* ."
         try:
-            if self.data.has_key(key):
+            if key in self.data:
                 return self.type[key]
             for x in self.subgroup:
-                if x.has_key(key):
+                if key in x:
                     return x.getFieldType(key)
         except KeyError:
             try:
@@ -396,10 +397,10 @@ class StructuredDictionary(Dictionary,ToXMLHelper):
                 return STRING_TYPE
     def setFieldType(self,key,t):
         "Sets the type of the field *key* ."
-        if self.data.has_key(key):
+        if key in self.data:
             self.type[key]=t
         for x in self.subgroup:
-            if x.has_key(key):
+            if key in x:
                 x.setFieldType(key,t)
 
 class Incar(StructuredDictionary,Parseable,ToString):
@@ -460,9 +461,9 @@ class Incar(StructuredDictionary,Parseable,ToString):
                 self[key]=val
                 self.setFieldType(key,STRING_TYPE)
                 if len(v)>2:
-                    print "Warning: more than one = :",x
+                    print(("Warning: more than one = :",x))
             if len(v)==1:
-                print "Warning: no = :",x
+                print(("Warning: no = :",x))
 
 
         if (closeflag):
@@ -474,7 +475,7 @@ class Incar(StructuredDictionary,Parseable,ToString):
     If comment is not available, *None* is returned."""
 
         if value is None:
-            if self.has_key(key):
+            if key in self:
                 value=self[key]
 
         if key=="IBRION":
@@ -580,7 +581,7 @@ class Incar(StructuredDictionary,Parseable,ToString):
                 "LCHARG",
                 "LVTOT"]
 
-        ff=filter(lambda x,k=self.data.keys(): x in k,fields)
+        ff=list(filter(lambda x,k=list(self.data.keys()): x in k,fields))
 
         for i in range(0,len(ff)):
             key     = ff[i]
@@ -592,7 +593,7 @@ class Incar(StructuredDictionary,Parseable,ToString):
                 f.write("%-8s = %15s\n"%(key,value))
 
 
-        for key in self.data.keys():
+        for key in list(self.data.keys()):
             if (key not in ff):
                 value   = self.xmlrepr(self[key],self.getFieldType(key))
                 comment = self.autocomment(key)

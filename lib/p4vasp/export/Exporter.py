@@ -8,7 +8,7 @@ typically influencing style (e.g. colors and scales)."""
     CELL_CENTERING_ZERO   = 2
 
     def __init__(self,
-        
+
         radius_factor=0.5,
         bond_factor=1.0,
         bond_radius=0.1,

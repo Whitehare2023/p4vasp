@@ -21,7 +21,7 @@ def _pixels_per_point():
     """Return the number of pixels for each typographer's point."""
     #
     # This is a function instead of a computed constant so that we
-    # don't have to actually initialize _gkt, allowing the application 
+    # don't have to actually initialize _gkt, allowing the application
     # to control that if needed.  It simply needs to be done before
     # this can be used.
     #
@@ -122,7 +122,7 @@ class BasicCanvas(piddle.Canvas):
             return
         angle = int(round(angle))
         if angle != 0:
-            raise NotImplementedError, "rotated text not implemented"
+            raise NotImplementedError("rotated text not implemented")
         if font is None:
             font = self.defaultFont
         lines = string.split(s, "\n")
@@ -165,7 +165,7 @@ class BasicCanvas(piddle.Canvas):
     def drawPolygon(self, pointlist, edgeColor=None, edgeWidth=None,
                     fillColor=None, closed=0):
         if len(pointlist) < 3:
-            raise ValueError, "too few points in the point list"
+            raise ValueError("too few points in the point list")
         # XXX lots more should be checked
         if edgeColor is None:
             edgeColor = self.defaultLineColor
@@ -229,7 +229,7 @@ class BasicCanvas(piddle.Canvas):
     def ensure_size(self, width, height):
         # like __ensure_size(), but doesn't return buffer
         if (width <= 0) or (height <= 0):
-            raise ValueError, "width and height must both be positive"
+            raise ValueError("width and height must both be positive")
         self.__ensure_size(width, height)
 
 
@@ -290,9 +290,9 @@ class BasicCanvas(piddle.Canvas):
             return new_pixmap
         else:
             self.__background_buffer = None
-            self.__background_buffer_size = (-1, -1)	
+            self.__background_buffer_size = (-1, -1)
             return None
-    
+
     def from_background_buffer(self):
 #        print "from background"
         width,height=self.__background_buffer_size
@@ -338,7 +338,7 @@ class BasicCanvas(piddle.Canvas):
 #	    self.__area.draw((0,0,win.width,win.height))
 
             return self.__buffer
-    
+
 
     # Internal interfaces:
 
@@ -362,8 +362,8 @@ class BasicCanvas(piddle.Canvas):
             self.__area.draw_pixmap(self.__gc, buffer, 0, 0, 0, 0,
                                     width, height)
         self.size = self.__area.get_allocation()[2:]
-	if hasattr(self,"resizeCallback"):
-	  self.resizeCallback(self.size[0],self.size[1])
+        if hasattr(self,"resizeCallback"):
+            self.resizeCallback(self.size[0],self.size[1])
 
     def __expose_event(self, area, event):
 #        print "expose event"
@@ -484,10 +484,10 @@ def _xlfd_to_gdkfont(xlfd, cache={}):
 class InteractiveCanvas(BasicCanvas):
     def __init__(self, area, window):
         # XXX set up the event handlers
-	if window is not None:
+        if window is not None:
           window.set_events(GDK.BUTTON1_MOTION_MASK
-	                  | GDK.BUTTON2_MOTION_MASK
-	                  | GDK.BUTTON3_MOTION_MASK
+                          | GDK.BUTTON2_MOTION_MASK
+                          | GDK.BUTTON3_MOTION_MASK
                           | GDK.BUTTON_PRESS_MASK
                           | GDK.BUTTON_RELEASE_MASK
                           | GDK.KEY_PRESS_MASK
@@ -495,7 +495,7 @@ class InteractiveCanvas(BasicCanvas):
                           | GDK.POINTER_MOTION_HINT_MASK)
           window.connect("event", self.__event)
         self.__get_allocation = area.get_allocation
-	self.__button=0
+        self.__button=0
         BasicCanvas.__init__(self, area)
 
     def isInteractive(self):
@@ -513,13 +513,13 @@ class InteractiveCanvas(BasicCanvas):
             if ok:
                 self.onOver(self, x, y, self.__button)
         elif event.type == GDK.BUTTON_PRESS:
-	    self.__button=event.button
+            self.__button=event.button
             x, y = widget.get_pointer()
             x, y, ok = self.__check_coords(x, y)
             if ok:
                 self.onOver(self, x, y,event.button)
         elif (event.type in [GDK.BUTTON_RELEASE]):
-	    self.__button=0
+            self.__button=0
             x, y, ok = self.__check_coords(event.x, event.y)
             if ok:
                 self.onClick(self, x, y, event.button)

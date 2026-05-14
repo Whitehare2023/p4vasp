@@ -36,7 +36,7 @@ class TestSystemPM(unittest.TestCase):
 
     def testOpen(self):
         s=self.makeXMLSystemPM("")
-        self.assertEquals(None,s.STRUCTURE)
+        self.assertEqual(None,s.STRUCTURE)
 
     def testDielectric(self):
         s=self.makeXMLSystemPM("""
@@ -69,10 +69,10 @@ class TestSystemPM(unittest.TestCase):
       </real>
      </dielectricfunction>""")
         self.assertIsNotNone(s.DIELECTRIC)
-        self.assertEquals(s.DIELECTRIC[0][0],[10,20,30,40,50,60,70],"Imaginary part, first row should match")
-        self.assertEquals(s.DIELECTRIC[0][1],[11,21,31,41,51,61,71],"Imaginary part, second row should match")
-        self.assertEquals(s.DIELECTRIC[1][0],[12,22,32,42,52,62,72],"Real part, first row should match")
-        self.assertEquals(s.DIELECTRIC[1][1],[13,23,33,43,53,63,73],"Real part, second row should match")
+        self.assertEqual(s.DIELECTRIC[0][0],[10,20,30,40,50,60,70],"Imaginary part, first row should match")
+        self.assertEqual(s.DIELECTRIC[0][1],[11,21,31,41,51,61,71],"Imaginary part, second row should match")
+        self.assertEqual(s.DIELECTRIC[1][0],[12,22,32,42,52,62,72],"Real part, first row should match")
+        self.assertEqual(s.DIELECTRIC[1][1],[13,23,33,43,53,63,73],"Real part, second row should match")
 
     def testDielectricFunctions(self):
         s=self.makeXMLSystemPM("""
@@ -134,15 +134,15 @@ class TestSystemPM(unittest.TestCase):
      </dielectricfunction>
     """)
         self.assertIsNotNone(s.DIELECTRIC_FUNCTIONS)
-        self.assertEquals(s.DIELECTRIC_FUNCTIONS[0][0][0],[10,20,30,40,50,60,70],"Imaginary part, first row should match")
-        self.assertEquals(s.DIELECTRIC_FUNCTIONS[0][0][1],[11,21,31,41,51,61,71],"Imaginary part, second row should match")
-        self.assertEquals(s.DIELECTRIC_FUNCTIONS[0][1][0],[12,22,32,42,52,62,72],"Real part, first row should match")
-        self.assertEquals(s.DIELECTRIC_FUNCTIONS[0][1][1],[13,23,33,43,53,63,73],"Real part, second row should match")
-        self.assertEquals(s.DIELECTRIC_FUNCTIONS[1][0][0],[14,24,34,44,54,64,74],"Imaginary part, first row should match")
-        self.assertEquals(s.DIELECTRIC_FUNCTIONS[1][0][1],[15,25,35,45,55,65,75],"Imaginary part, second row should match")
-        self.assertEquals(s.DIELECTRIC_FUNCTIONS[1][1][0],[16,26,36,46,56,66,76],"Real part, first row should match")
-        self.assertEquals(s.DIELECTRIC_FUNCTIONS[1][1][1],[17,27,37,47,57,67,77],"Real part, second row should match")
-        self.assertEquals(s.DIELECTRIC_FUNCTIONS_COMMENTS,["DF 1","DF 2"])
+        self.assertEqual(s.DIELECTRIC_FUNCTIONS[0][0][0],[10,20,30,40,50,60,70],"Imaginary part, first row should match")
+        self.assertEqual(s.DIELECTRIC_FUNCTIONS[0][0][1],[11,21,31,41,51,61,71],"Imaginary part, second row should match")
+        self.assertEqual(s.DIELECTRIC_FUNCTIONS[0][1][0],[12,22,32,42,52,62,72],"Real part, first row should match")
+        self.assertEqual(s.DIELECTRIC_FUNCTIONS[0][1][1],[13,23,33,43,53,63,73],"Real part, second row should match")
+        self.assertEqual(s.DIELECTRIC_FUNCTIONS[1][0][0],[14,24,34,44,54,64,74],"Imaginary part, first row should match")
+        self.assertEqual(s.DIELECTRIC_FUNCTIONS[1][0][1],[15,25,35,45,55,65,75],"Imaginary part, second row should match")
+        self.assertEqual(s.DIELECTRIC_FUNCTIONS[1][1][0],[16,26,36,46,56,66,76],"Real part, first row should match")
+        self.assertEqual(s.DIELECTRIC_FUNCTIONS[1][1][1],[17,27,37,47,57,67,77],"Real part, second row should match")
+        self.assertEqual(s.DIELECTRIC_FUNCTIONS_COMMENTS,["DF 1","DF 2"])
 
     def testProjectedEigenvaluesEnergies(self):
         self.turnOffMessages()
@@ -169,15 +169,15 @@ class TestSystemPM(unittest.TestCase):
       </projected>
     """)
         self.assertIsNotNone(s.PROJECTED_EIGENVALUES_ENERGIES)
-        self.assertEquals(len(s.PROJECTED_EIGENVALUES_ENERGIES),1,"Spin dimensionshould match")
-        self.assertEquals(len(s.PROJECTED_EIGENVALUES_ENERGIES[0]),1,"K-point dimensionshould match")
-        self.assertEquals(len(s.PROJECTED_EIGENVALUES_ENERGIES[0][0]),3,"Number of bands should match")
-        self.assertEquals(s.PROJECTED_EIGENVALUES_ENERGIES[0][0][0][0],-1.2,"First energy should match")
-        self.assertEquals(s.PROJECTED_EIGENVALUES_ENERGIES[0][0][0][1],1.0,"First occupancy should match")
-        self.assertEquals(s.PROJECTED_EIGENVALUES_ENERGIES[0][0][1][0],-1.1,"2nd energy should match")
-        self.assertEquals(s.PROJECTED_EIGENVALUES_ENERGIES[0][0][1][1],1.0,"2nd occupancy should match")
-        self.assertEquals(s.PROJECTED_EIGENVALUES_ENERGIES[0][0][2][0],-1.0,"3rd energy should match")
-        self.assertEquals(s.PROJECTED_EIGENVALUES_ENERGIES[0][0][2][1],0.0,"3rd occupancy should match")
+        self.assertEqual(len(s.PROJECTED_EIGENVALUES_ENERGIES),1,"Spin dimensionshould match")
+        self.assertEqual(len(s.PROJECTED_EIGENVALUES_ENERGIES[0]),1,"K-point dimensionshould match")
+        self.assertEqual(len(s.PROJECTED_EIGENVALUES_ENERGIES[0][0]),3,"Number of bands should match")
+        self.assertEqual(s.PROJECTED_EIGENVALUES_ENERGIES[0][0][0][0],-1.2,"First energy should match")
+        self.assertEqual(s.PROJECTED_EIGENVALUES_ENERGIES[0][0][0][1],1.0,"First occupancy should match")
+        self.assertEqual(s.PROJECTED_EIGENVALUES_ENERGIES[0][0][1][0],-1.1,"2nd energy should match")
+        self.assertEqual(s.PROJECTED_EIGENVALUES_ENERGIES[0][0][1][1],1.0,"2nd occupancy should match")
+        self.assertEqual(s.PROJECTED_EIGENVALUES_ENERGIES[0][0][2][0],-1.0,"3rd energy should match")
+        self.assertEqual(s.PROJECTED_EIGENVALUES_ENERGIES[0][0][2][1],0.0,"3rd occupancy should match")
         self.turnOnMessages()
     def testEmptySystemPMStructure(self):
         self.turnOffMessages()
@@ -304,14 +304,14 @@ class TestSystemPM(unittest.TestCase):
    </structure>
     """)
         self.assertIsNotNone(s.PRIMITIVE_STRUCTURE)
-        self.assertEquals(len(s.PRIMITIVE_STRUCTURE),2,"primitive structure should have two atoms")
-        self.assertEquals(s.PRIMITIVE_STRUCTURE[0][0], 0.0,"coordinates should match")
-        self.assertEquals(s.PRIMITIVE_STRUCTURE[0][1], 0.0,"coordinates should match")
-        self.assertEquals(s.PRIMITIVE_STRUCTURE[0][2], 0.0,"coordinates should match")
-        self.assertEquals(s.PRIMITIVE_STRUCTURE[1][0],-0.25,"coordinates should match")
-        self.assertEquals(s.PRIMITIVE_STRUCTURE[1][1],-0.25,"coordinates should match")
-        self.assertEquals(s.PRIMITIVE_STRUCTURE[1][2],-0.25,"coordinates should match")
-        self.assertEquals(s.PRIMITIVE_STRUCTURE.info.atomspertype,[2],"Atominfo should have correct size")
+        self.assertEqual(len(s.PRIMITIVE_STRUCTURE),2,"primitive structure should have two atoms")
+        self.assertEqual(s.PRIMITIVE_STRUCTURE[0][0], 0.0,"coordinates should match")
+        self.assertEqual(s.PRIMITIVE_STRUCTURE[0][1], 0.0,"coordinates should match")
+        self.assertEqual(s.PRIMITIVE_STRUCTURE[0][2], 0.0,"coordinates should match")
+        self.assertEqual(s.PRIMITIVE_STRUCTURE[1][0],-0.25,"coordinates should match")
+        self.assertEqual(s.PRIMITIVE_STRUCTURE[1][1],-0.25,"coordinates should match")
+        self.assertEqual(s.PRIMITIVE_STRUCTURE[1][2],-0.25,"coordinates should match")
+        self.assertEqual(s.PRIMITIVE_STRUCTURE.info.atomspertype,[2],"Atominfo should have correct size")
         self.turnOnMessages()
     def testPrimitiveIndex(self):
         self.turnOffMessages()
@@ -324,9 +324,9 @@ class TestSystemPM(unittest.TestCase):
   </dynmat>
     """)
         self.assertIsNotNone(s.PRIMITIVE_INDEX)
-        self.assertEquals(len(s.PRIMITIVE_INDEX),2,"Primitive index dimension should match")
-        self.assertEquals(s.PRIMITIVE_INDEX[0],1,"First index should match")
-        self.assertEquals(s.PRIMITIVE_INDEX[1],44,"Second index should match")
+        self.assertEqual(len(s.PRIMITIVE_INDEX),2,"Primitive index dimension should match")
+        self.assertEqual(s.PRIMITIVE_INDEX[0],1,"First index should match")
+        self.assertEqual(s.PRIMITIVE_INDEX[1],44,"Second index should match")
         self.turnOnMessages()
 
 if __name__ == '__main__':

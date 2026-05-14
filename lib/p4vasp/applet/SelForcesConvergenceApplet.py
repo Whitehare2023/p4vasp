@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -20,7 +20,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from __future__ import generators
+
 
 from math import *
 #from p4vasp.graph import *
@@ -28,6 +28,7 @@ from math import *
 #from p4vasp.store import *
 from p4vasp.applet.Applet import *
 from p4vasp.applet.GraphWindowApplet import *
+from functools import reduce
 
 class SelForcesConvergenceApplet(GraphWindowApplet):
     menupath=["Convergence","Selected forces"]
@@ -66,25 +67,25 @@ class SelForcesConvergenceApplet(GraphWindowApplet):
             if forces is not None:
                 struct=system.current("INITIAL_STRUCTURE")
                 if struct is None:
-                    dof=range(3*len(forces[0]))
+                    dof=list(range(3*len(forces[0])))
                 else:
                     if struct.isSelective():
                         dof=[]
                         sel=struct.selective
                         for i in range(3*len(sel)):
-                            if sel[i/3][i%3]:
+                            if sel[i//3][i%3]:
                                 dof.append(i)
                     else:
-                        dof=range(3*len(forces[0]))
+                        dof=list(range(3*len(forces[0])))
                 yield 1
                 for i in range(len(forces)):
                     msg().step(i+1,len(forces))
                     if forces[i] is not None:
-                        ff=filter(lambda x:len(x)==3,forces[i])
+                        ff=[x for x in forces[i] if len(x)==3]
                         f=[]
                         for j in dof:
                             try:
-                                f.append(abs(ff[j/3][j%3]))
+                                f.append(abs(ff[j//3][j%3]))
                             except:
                                 pass
                         maxf.append((i+1,max(f)))

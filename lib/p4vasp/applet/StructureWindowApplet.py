@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -75,7 +75,7 @@ class StructureWindowApplet(Applet,p4vasp.Selection.SelectionListener):
         pass
     def setEmbeddedMode(self):
 #    msg().error("StructureWindowApplet.setEmbeddedMode() not supported.")
-        raise "StructureWindowApplet.setEmbeddedMode() not supported."
+        raise RuntimeError("StructureWindowApplet.setEmbeddedMode() not supported.")
 
     def createPanel(self):
         return None
@@ -97,8 +97,8 @@ class StructureWindowApplet(Applet,p4vasp.Selection.SelectionListener):
                         w=a.swin.win
                         if w is not None:
                             l.append((w.x,w.y,w.w,w.h))
-            xx=max(map(lambda x:x[0]+x[2],l))
-            yy=max(map(lambda x:x[1]+x[3],l))
+            xx=max([x[0]+x[2] for x in l])
+            yy=max([x[1]+x[3] for x in l])
             if yy<=600:
                 xx=0
             else:

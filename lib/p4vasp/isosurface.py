@@ -73,7 +73,7 @@ def handle_type2(va, vb, vc, vd,
         sign=1
     else:
         sign=-1
-    
+
     return [(sign*nAC,sign*nAD,sign*nBC,posAC,posAD,posBC),(sign*nAD,sign*nBD,sign*nBC,posAD,posBD,posBC)]
 
 def handle_tetrahedron (chgcar, a1, a2, a3,

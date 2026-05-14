@@ -34,14 +34,12 @@ class Paint3DInterface:
     def write(self,f):
         pass
 
-from exceptions import Exception
- 
 class Paint3DRecorder(Paint3DInterface):
     def __init__(self):
         Paint3DInterface.__init__(self)
         self.reset()
     def get(self,name):
-        if self.dictionary.has_key(name):
+        if name in self.dictionary:
             return self.dictionary[name]
         if self.parent is None:
             return None
@@ -55,7 +53,7 @@ class Paint3DRecorder(Paint3DInterface):
             o.name=str(len(self.commands))
         else:
             o.name=name
-        if self.dictionary.has_key(o.name):
+        if o.name in self.dictionary:
             raise Exception("Attempt to redefine Paint3D object %s"%o.name)
         self.dictionary[o.name]=o
         o.parent=self

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -28,7 +28,7 @@ import traceback
 from p4vasp.setutils import *
 from p4vasp import *
 from p4vasp.applet import *
-from UserList import *
+from collections import *
 
 t_all           = re.compile("^\\s*all")
 t_indices       = re.compile("^\\s*\\(\\s*([+-]?[0-9]+)\\s+([+-]?[0-9]+)\\s+([+-]?[0-9]+)\\s*\\)")
@@ -54,7 +54,7 @@ def createRangeForSpec(n,struct):
         return []
     for i in range(n):
         before+=info[i].atomspertype
-    return range(before,before+info[n].atomspertype)
+    return list(range(before,before+info[n].atomspertype))
 
 def createRangeForId(I,struct):
     info=struct.info
@@ -62,7 +62,7 @@ def createRangeForId(I,struct):
     before=0
     for i in range(len(info)):
         if strip(info[i].element)==I:
-            l.extend(range(before,before+info[i].atomspertype))
+            l.extend(list(range(before,before+info[i].atomspertype)))
         before+=info[i].atomspertype
     return l
 
@@ -84,12 +84,13 @@ class Selection(UserList):
                     ll.append((x,0,0,0))
                 else:
                     ll.append(x)
+            self.data=ll
 
     def getInCellIndexes(self):
-        f=filter(lambda x:(x[1]==0 and x[2]==0 and x[3]==0),self.data)
-        return map(lambda x:x[0],f)
+        f=[x for x in self.data if (x[1]==0 and x[2]==0 and x[3]==0)]
+        return [x[0] for x in f]
     def getAtoms(self):
-        return map(lambda x:x[0],self.data)
+        return [x[0] for x in self.data]
 
     def notify(self,origin):
         global _selection
@@ -115,14 +116,14 @@ class Selection(UserList):
         return Selection(l)
 
     def toSet(self):
-        t=map(lambda x:(x[1],x[2],x[3],x[0]),to_set(self.data))
+        t=[(x[1],x[2],x[3],x[0]) for x in to_set(self.data)]
         t.sort()
-        self.data=map(lambda x:(x[3],x[0],x[1],x[2]),t)
+        self.data=[(x[3],x[0],x[1],x[2]) for x in t]
         return self
     def discardCellInfo(self):
-        self.data=map(lambda x:(x[0],0,0,0),self.data)
+        self.data=[(x[0],0,0,0) for x in self.data]
     def discardOutOfCell(self):
-        self.data=filter(lambda x:(x[1]==0 and x[2]==0 and x[3]==0),self.data)
+        self.data=[x for x in self.data if (x[1]==0 and x[2]==0 and x[3]==0)]
     def decode(self,text,struct=None):
         self.data=[]
         self.appendSellang(text,struct)
@@ -142,7 +143,7 @@ class Selection(UserList):
             try:
                 m=t_all.match(x)
                 if m is not None:
-                    self.data.extend(map(lambda x:(x,nx,ny,nz),range(len(struct))))
+                    self.data.extend([(x,nx,ny,nz) for x in range(len(struct))])
                     x=strip(x[m.end():])
                     continue
 
@@ -153,17 +154,17 @@ class Selection(UserList):
                     continue
                 m=t_range.match(x)
                 if m is not None:
-                    self.data.extend(map(lambda x:(x,nx,ny,nz),range(int(m.group(1))-1, int(m.group(2)))))
+                    self.data.extend([(x,nx,ny,nz) for x in range(int(m.group(1))-1, int(m.group(2)))])
                     x=strip(x[m.end():])
                     continue
                 m=t_lrange.match(x)
                 if m is not None:
-                    self.data.extend(map(lambda x:(x,nx,ny,nz),range(0,int(m.group(1)))))
+                    self.data.extend([(x,nx,ny,nz) for x in range(0,int(m.group(1)))])
                     x=strip(x[m.end():])
                     continue
                 m=t_rrange.match(x)
                 if m is not None:
-                    self.data.extend(map(lambda x:(x,nx,ny,nz),range(int(m.group(1))-1,len(struct))))
+                    self.data.extend([(x,nx,ny,nz) for x in range(int(m.group(1))-1,len(struct))])
                     x=strip(x[m.end():])
                     continue
                 m=t_num.match(x)
@@ -174,7 +175,7 @@ class Selection(UserList):
                     continue
                 m=t_spec.match(x)
                 if m is not None:
-                    self.data.extend(map(lambda x:(x,nx,ny,nz),createRangeForSpec(int(m.group(1))-1,struct)))
+                    self.data.extend([(x,nx,ny,nz) for x in createRangeForSpec(int(m.group(1))-1,struct)])
                     x=strip(x[m.end():])
                     continue
                 m=t_specnum.match(x)
@@ -185,22 +186,22 @@ class Selection(UserList):
                     continue
                 m=t_speclrange.match(x)
                 if m is not None:
-                    self.data.extend(map(lambda x:(x,nx,ny,nz),createRangeForSpec(int(m.group(1))-1,struct)[:int(m.group(2))]))
+                    self.data.extend([(x,nx,ny,nz) for x in createRangeForSpec(int(m.group(1))-1,struct)[:int(m.group(2))]])
                     x=strip(x[m.end():])
                     continue
                 m=t_specrrange.match(x)
                 if m is not None:
-                    self.data.extend(map(lambda x:(x,nx,ny,nz),createRangeForSpec(int(m.group(1))-1,struct)[int(m.group(2))-1:]))
+                    self.data.extend([(x,nx,ny,nz) for x in createRangeForSpec(int(m.group(1))-1,struct)[int(m.group(2))-1:]])
                     x=strip(x[m.end():])
                     continue
                 m=t_specrange.match(x)
                 if m is not None:
-                    self.data.extend(map(lambda x:(x,nx,ny,nz),createRangeForSpec(int(m.group(1))-1,struct)[int(m.group(2))-1:int(m.group(3))]))
+                    self.data.extend([(x,nx,ny,nz) for x in createRangeForSpec(int(m.group(1))-1,struct)[int(m.group(2))-1:int(m.group(3))]])
                     x=strip(x[m.end():])
                     continue
                 m=t_id.match(x)
                 if m is not None:
-                    self.data.extend(map(lambda x:(x,nx,ny,nz),createRangeForId(m.group(1),struct)))
+                    self.data.extend([(x,nx,ny,nz) for x in createRangeForId(m.group(1),struct)])
                     x=strip(x[m.end():])
                     continue
                 m=t_idnum.match(x)
@@ -211,17 +212,17 @@ class Selection(UserList):
                     continue
                 m=t_idlrange.match(x)
                 if m is not None:
-                    self.data.extend(map(lambda x:(x,nx,ny,nz),createRangeForId(m.group(1),struct)[:int(m.group(2))]))
+                    self.data.extend([(x,nx,ny,nz) for x in createRangeForId(m.group(1),struct)[:int(m.group(2))]])
                     x=strip(x[m.end():])
                     continue
                 m=t_idrrange.match(x)
                 if m is not None:
-                    self.data.extend(map(lambda x:(x,nx,ny,nz),createRangeForId(m.group(1),struct)[int(m.group(2))-1:]))
+                    self.data.extend([(x,nx,ny,nz) for x in createRangeForId(m.group(1),struct)[int(m.group(2))-1:]])
                     x=strip(x[m.end():])
                     continue
                 m=t_idrange.match(x)
                 if m is not None:
-                    self.data.extend(map(lambda x:(x,nx,ny,nz),createRangeForId(m.group(1),struct)[int(m.group(2))-1:int(m.group(3))]))
+                    self.data.extend([(x,nx,ny,nz) for x in createRangeForId(m.group(1),struct)[int(m.group(2))-1:int(m.group(3))]])
                     x=strip(x[m.end():])
                     continue
 #       print "UTS",x
@@ -239,21 +240,23 @@ class Selection(UserList):
         s=""
         last=None
         begin=None
-        c=compile("""
-if last==begin:
-    s+=" %d"%(last+1)
-elif (last-1)==begin:
-    s+=" %d %d"%(begin+1,last+1)
-else:
-    s+=" %d-%d"%(begin+1,last+1)
-last=None
-begin=None
-""","-","exec")
+
+        def flush_range(s, begin, last):
+            if last==begin:
+                s+=" %d"%(last+1)
+            elif (last-1)==begin:
+                s+=" %d %d"%(begin+1,last+1)
+            else:
+                s+=" %d-%d"%(begin+1,last+1)
+            return s
+
         for i,x,y,z in sel:
             if x!=nx or y!=ny or z!=nz:
                 nx,ny,nz=x,y,z
                 if begin is not None:
-                    exec c
+                    s=flush_range(s,begin,last)
+                    last=None
+                    begin=None
                 s+=" (%d %d %d)"%(nx,ny,nz)
             if begin is None:
                 last=i
@@ -262,11 +265,11 @@ begin=None
                 if i==last+1:
                     last=i
                 else:
-                    exec c
+                    s=flush_range(s,begin,last)
                     begin=i
                     last=i
         if begin is not None:
-            exec c
+            s=flush_range(s,begin,last)
         return strip(s)
 
     def splitParts(self,l=None):
@@ -309,7 +312,7 @@ begin=None
     def __str__(self):
         return self.encode()
     def encodePart(self,sel,struct=None):
-        if sel==range(len(struct)):
+        if sel==list(range(len(struct))):
             return "all"
         info=struct.info
 
@@ -331,7 +334,7 @@ begin=None
             before=0
             flag=0
             for i in range(len(info)):
-                r=range(before,before+info[i].atomspertype)
+                r=list(range(before,before+info[i].atomspertype))
 #       print "elem %02d %02s"%(i,info[i].element),r,l
                 if l[:min(len(l),len(r))]==r:
                     if len(s):
@@ -373,7 +376,7 @@ begin=None
             l=l[len(r):]
         if len(s):
             s+=" "
-        s+=join(map(str,l))
+        s+=join(list(map(str,l)))
         return s
 
 _selection=Selection()
@@ -406,29 +409,29 @@ def encodeRange(sel):
         remove_set(l,r)
     if len(s):
         s+=" "
-    s+=join(map(str,l))
+    s+=join(list(map(str,l)))
     return s
 
 if __name__=="__main__":
-    from SystemPM import *
+    from .SystemPM import *
 
     system=XMLSystemPM("../../vasprun.xml")
-    print system.INITIAL_STRUCTURE.info.toxml()
+    print((system.INITIAL_STRUCTURE.info.toxml()))
     sel=Selection()
     s="#1"
-    print s,sel.appendSellang(s,system.INITIAL_STRUCTURE)
+    print((s,sel.appendSellang(s,system.INITIAL_STRUCTURE)))
     s="#2"
-    print s,sel.appendSellang(s,system.INITIAL_STRUCTURE)
+    print((s,sel.appendSellang(s,system.INITIAL_STRUCTURE)))
     s="#1 #2"
-    print s,sel.appendSellang(s,system.INITIAL_STRUCTURE)
+    print((s,sel.appendSellang(s,system.INITIAL_STRUCTURE)))
     s="-2"
-    print s,sel.appendSellang(s,system.INITIAL_STRUCTURE)
+    print((s,sel.appendSellang(s,system.INITIAL_STRUCTURE)))
     s="N Ni"
-    print s,sel.appendSellang(s,system.INITIAL_STRUCTURE)
+    print((s,sel.appendSellang(s,system.INITIAL_STRUCTURE)))
     sel.toSet()
-    print "set",sel
-    print "atoms",sel.getAtoms()
-    print "encode simple",sel.encodeSimple()
+    print(("set",sel))
+    print(("atoms",sel.getAtoms()))
+    print(("encode simple",sel.encodeSimple()))
     sel.append((2,0,0,0))
     sel.append((6,0,0,0))
     sel.append((7,0,0,0))
@@ -442,32 +445,32 @@ if __name__=="__main__":
     sel.append((3,1,1,0))
     sel.append((4,1,1,0))
     sel.toSet()
-    print "encode simple",sel.encodeSimple()
+    print(("encode simple",sel.encodeSimple()))
     s="N Ni (1 0 0) H C O"
-    print s,sel.decode(s,system.INITIAL_STRUCTURE)
-    print s,sel.encodeSimple()
-    print sel.splitParts()
-    print s,sel.encode(system.INITIAL_STRUCTURE)
+    print((s,sel.decode(s,system.INITIAL_STRUCTURE)))
+    print((s,sel.encodeSimple()))
+    print((sel.splitParts()))
+    print((s,sel.encode(system.INITIAL_STRUCTURE)))
 
-    print
-    print
+    print()
+    print()
     try:
         s=Structure("../../POSCAR")
     except:
-        print "POSCAR not found."
-        raise "stop"
+        print("POSCAR not found.")
+        raise RuntimeError("stop")
     sel=Selection()
     sel.append((7,1,0,0))
     sel.append((5,0,0,0))
     sel.append((1,0,0,0))
-    print sel.encodeSimple()
-    print sel.encode(s)
+    print((sel.encodeSimple()))
+    print((sel.encode(s)))
     sel=Selection()
     sel.append((5,1,0,0))
     sel.append((6,0,0,0))
     sel.append((7,0,0,0))
-    print sel.encodeSimple()
-    print sel.encode(s)
+    print((sel.encodeSimple()))
+    print((sel.encode(s)))
 
 #  s="#2"
 #  s="#1 #2"

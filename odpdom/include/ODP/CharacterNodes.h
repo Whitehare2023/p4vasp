@@ -38,7 +38,7 @@ class ODPCharacterData : public ODPNode {
     $result=Py_None;
   }
   else{
-    $result=PyString_FromString($1);
+    $result=PyUnicode_FromString($1);
     delete $1;
   }
 }
@@ -50,7 +50,7 @@ class ODPCharacterData : public ODPNode {
     $result=Py_None;
   }
   else{
-    $result=PyString_FromStringAndSize($1,ODP_strlen($1));
+    $result=PyUnicode_FromStringAndSize($1,ODP_strlen($1));
   }
 }
 #endif

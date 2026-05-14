@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -20,7 +20,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from __future__ import generators
+
 from p4vasp.StructureWindow import *
 from p4vasp.store import *
 from p4vasp.applet.Applet import *
@@ -119,7 +119,7 @@ class STMWindowApplet(Applet,p4vasp.Selection.SelectionListener):
         pass
     def setEmbeddedMode(self):
 #    msg().error("StructureWindowApplet.setEmbeddedMode() not supported.")
-        raise "STMWindowApplet.setEmbeddedMode() not supported."
+        raise RuntimeError("STMWindowApplet.setEmbeddedMode() not supported.")
 
     def createPanel(self):
         return None
@@ -364,7 +364,7 @@ class STMWindowApplet(Applet,p4vasp.Selection.SelectionListener):
             cap=cp4vasp.ChgcarSmearProcess(self.charge,chsmear)
             msg().status("Start smearing.")
             yield 1
-            while cap.next():
+            while next(cap):
                 msg().status(cap.status())
                 msg().step(cap.step(),cap.total())
                 yield 1
@@ -384,7 +384,7 @@ class STMWindowApplet(Applet,p4vasp.Selection.SelectionListener):
             self.sd.setFArray(None)
             self.sd.scale=0
         else:
-            if a is not 0:
+            if a != 0:
                 self.a=a
             self.minimum=a.getMinimum()
             self.maximum=a.getMaximum()
@@ -447,8 +447,8 @@ class STMWindowApplet(Applet,p4vasp.Selection.SelectionListener):
                         w=a.swin.win
                         if w is not None:
                             l.append((w.x,w.y,w.w,w.h))
-            xx=max(map(lambda x:x[0]+x[2],l))
-            yy=max(map(lambda x:x[1]+x[3],l))
+            xx=max([x[0]+x[2] for x in l])
+            yy=max([x[1]+x[3] for x in l])
             if yy<=600:
                 xx=0
             else:

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #
 # HappyDoc:docStringFormat='ClassicStructuredText'
 #
@@ -32,7 +32,7 @@ from p4vasp.matrix import *
 
 #zombies=[]
 
-class StructureWindow(cp4vasp.VisWindow):
+class StructureWindow:
     def __init__(self,x=0,y=0,w=400,h=400,title="",this=None,atomtypes=None):
         self.x=x
         self.y=y
@@ -242,7 +242,7 @@ class StructureWindow(cp4vasp.VisWindow):
         return self.structure_drawer.showCell(s)
 
     def hide(self):
-        print "StructureWindow.hide"
+        print("StructureWindow.hide")
         if self.visible:
 
             ###############################################################
@@ -258,11 +258,11 @@ class StructureWindow(cp4vasp.VisWindow):
             self.arrows_drawer=None
             self.structure_drawer=None
             self.navigator=None
-            print "StructureWindow.hide a"
+            print("StructureWindow.hide a")
             self.win.hide()
-            print "StructureWindow.hide b"
+            print("StructureWindow.hide b")
             self.visible=0
-        print "StructureWindow.hide -"
+        print("StructureWindow.hide -")
 
     def redraw(self):
         if self.visible:

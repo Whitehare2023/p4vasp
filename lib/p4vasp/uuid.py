@@ -60,14 +60,14 @@ try:
 except:
     def _getrandbits(num_bits):     # took this from: http://www.zopelabs.com/cookbook/1067449107
         rnd = _random.Random()
-        bytes = 0L
+        bytes = 0
         for i in range(0, num_bits):
-            bytes += long(rnd.randint(0,1)) << i
+            bytes += int(rnd.randint(0,1)) << i
         return bytes
 
 
 # throw replacement in for socket.htonl and friends (enshures? we always get a ulong in return)
-def _DWORD(num): return num & 0xFFFFFFFFL
+def _DWORD(num): return num & 0xFFFFFFFF
 def _WORD(num): return num & 0xFFFF
 
 if _sys.byteorder == 'big':
@@ -79,10 +79,10 @@ else:
         return ((w & 0xff00) >> 8) | ((w & 0x00ff) << 8)
     def _htonl(dw):
         dw = _DWORD(dw)
-        return ((dw & 0xff000000L) >> 24) | \
-                                ((dw & 0x00ff0000L) >> 8)  |    \
-                                ((dw & 0x0000ff00L) << 8)  |    \
-                                ((dw & 0x000000ffL) << 24)
+        return ((dw & 0xff000000) >> 24) | \
+                                ((dw & 0x00ff0000) >> 8)  |    \
+                                ((dw & 0x0000ff00) << 8)  |    \
+                                ((dw & 0x000000ff) << 24)
 _ntohs = _htons
 _ntohl = _htonl
 
@@ -148,7 +148,7 @@ class UuidGen(object):
         time_now = self._get_time_now()
         clock_seq = self._state.clock_seq
 
-        time_low = time_now & 0xFFFFFFFFL
+        time_low = time_now & 0xFFFFFFFF
         time_mid = (time_now >> 32) & 0xFFFF
         time_hi_and_version = (time_now>> 48)   & 0x0FFFF
         node = _getrandbits(47)                                         # throw in random bits instead of MAC address
@@ -166,7 +166,7 @@ class UuidGen(object):
 
     def uuid_random(self):
         rnd = _getrandbits(128)
-        time_low = rnd & 0xFFFFFFFFL
+        time_low = rnd & 0xFFFFFFFF
         time_mid = (rnd >> 32) & 0x0FFFF
         time_hi_and_version = (rnd >> 48) & 0x0FFFF
         clock_seq_hi_and_reserved = (rnd >> 64) & 0x0FF
@@ -219,9 +219,9 @@ class UuidGen(object):
         except:
             raise UuidError('invalid namespace uuid: %r' % nsuuid)
         # convert UUID bytes to network byte order
-        time_low = _htonl(long(nsuuid[:8], 16))
-        time_mid = _htons(long(nsuuid[9:13], 16))
-        time_hi_and_version = _htons(long(nsuuid[14:18], 16))
+        time_low = _htonl(int(nsuuid[:8], 16))
+        time_mid = _htons(int(nsuuid[9:13], 16))
+        time_hi_and_version = _htons(int(nsuuid[14:18], 16))
 
         # hash the stuff
         h = hasher.new()
@@ -280,7 +280,7 @@ class UuidGen(object):
         ##
         self._state.time_last = time_now
         self._state.dump()
-        return long(time_now) + self._state.TDELTA
+        return int(time_now) + self._state.TDELTA
 
 
 
@@ -321,7 +321,7 @@ UUID_PAT = _re.compile(r'''
 
 def get_variant(uuid):
     uuid = clean(uuid)
-    variant = long(uuid[19:21], 16)
+    variant = int(uuid[19:21], 16)
     if not variant & 0x80:
         return VARIANT_NCS
     elif not variant & 0x40 and variant & 0x80:
@@ -336,7 +336,7 @@ def get_variant(uuid):
 
 def get_version(uuid):
     uuid = clean(uuid)
-    time_hi_and_version = long(uuid[14:18], 16)
+    time_hi_and_version = int(uuid[14:18], 16)
     version =  time_hi_and_version >> 12
     if 1 < version > 5:
         version = VERSION_UNKNOWN
@@ -345,10 +345,10 @@ def get_version(uuid):
 
 def get_time(uuid):
     uuid = clean(uuid)
-    time_low = long(uuid[:8], 16)
-    time_mid = long(uuid[9:13], 16)
-    time_hi_and_version = long(uuid[14:18], 16)
-    variant = long(uuid[19:21], 16)
+    time_low = int(uuid[:8], 16)
+    time_mid = int(uuid[9:13], 16)
+    time_hi_and_version = int(uuid[14:18], 16)
+    variant = int(uuid[19:21], 16)
     version =  time_hi_and_version >> 12
     if version == 1 and(variant & 0x80) and not (variant & 0x40):
         time_hi_and_version &= ~(version << 12)
@@ -359,9 +359,9 @@ def get_time(uuid):
 
 def get_mac_address(uuid):
     uuid = clean(uuid)
-    node = long(uuid[24:], 16)
-    time_hi_and_version = long(uuid[14:18], 16)
-    variant = long(uuid[19:21], 16)
+    node = int(uuid[24:], 16)
+    time_hi_and_version = int(uuid[14:18], 16)
+    variant = int(uuid[19:21], 16)
     version =  time_hi_and_version >> 12
     if version == 1 and(variant & 0x80) and not (variant & 0x40):
         return node
@@ -403,21 +403,21 @@ uuid.py [-h] [-t <type> [-s <namespace uuid> -n <name>]]
         o, args = getopt.getopt(sys.argv[1:], 'ht:s:n:')
         o = dict(o)
         if '-h' in o:
-            print USAGE
+            print(USAGE)
         else:
             type_uuid = o.get('-t', None)
             if type_uuid == 'time':
-                print uuid_time()
+                print((uuid_time()))
             elif type_uuid == 'random':
-                print uuid_random()
+                print((uuid_random()))
             elif type_uuid == 'md5':
-                print uuid_md5(o['-s'], o['-n'])
+                print((uuid_md5(o['-s'], o['-n'])))
             elif type_uuid == 'sha1':
-                print uuid_sha1(o['-s'], o['-n'])
+                print((uuid_sha1(o['-s'], o['-n'])))
             else:
                 raise UuidError('')
     except:
-        print USAGE
+        print(USAGE)
     sys.exit()
 
 ####################
@@ -427,7 +427,7 @@ uuid.py [-h] [-t <type> [-s <namespace uuid> -n <name>]]
 ####################
 
 def test():
-    g = globals().items()
+    g = list(globals().items())
     variants = dict([(value, name) for name, value in g \
                                                             if name.startswith('VARIANT_')])
     versions = dict([(value, name) for name, value in g \
@@ -440,14 +440,14 @@ def test():
             uuid_sha1(NAMESPACE_DNS, 'bar'),
             )
 
-    print
+    print()
     for UUID in (UUIDS):
-        print 'UUID:      %r' % UUID
-        print 'variant:    ', variants.get(get_variant(UUID), 'unknown')
-        print 'verson:    ', versions.get(get_version(UUID), 'unknown')
-        print 'time:        ', _time.ctime(get_time(UUID)), '(%ss since epoch)' \
-                                                                        % get_time(UUID)
-        print 'MAC:         %s' % format_mac_address(get_mac_address(UUID))
-        print
+        print(('UUID:      %r' % UUID))
+        print(('variant:    ', variants.get(get_variant(UUID), 'unknown')))
+        print(('verson:    ', versions.get(get_version(UUID), 'unknown')))
+        print(('time:        ', _time.ctime(get_time(UUID)), '(%ss since epoch)' \
+                                                                        % get_time(UUID)))
+        print(('MAC:         %s' % format_mac_address(get_mac_address(UUID))))
+        print()
 
 #test()

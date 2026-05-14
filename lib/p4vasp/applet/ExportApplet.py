@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -153,10 +153,10 @@ class ExportApplet(Applet):
         try:
             index=self.getSWinApplet().index
         except:
-            index=0        
+            index=0
         if single:
             sequence=[sequence[max(min(len(sequence)-1,index),0)]]
-       
+
         data=Data(
           structures=sequence,
           vectors=self.getSWinApplet().getArrowsSequence(),
@@ -169,7 +169,7 @@ class ExportApplet(Applet):
             data.isosurfaces.append((self.swin().chgcar,d.getLevel(),Vector(d.red,d.green,d.blue)))
             d=self.swin().neg_isosurface_drawer
             data.isosurfaces.append((self.swin().chgcar,d.getLevel(),Vector(d.red,d.green,d.blue)))
- 
+
         path=self.fileentry.get_text()
         if len(path)==0:
             path=self.fixOutputPath()

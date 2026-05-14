@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 from math import *
 from p4vasp.paint3d.OpenGLPaint3D import *
 from p4vasp.paint3d.PovrayPaint3D import *
@@ -31,29 +31,29 @@ class ConvexShape:
             v.append(self.vertices[i])
         self.vertices=v
         for i in range(len(self.planes)):
-            self.planes[i]=map(lambda x,l=l:l.index(x),self.planes[i])
+            self.planes[i]=list(map(lambda x,l=l:l.index(x),self.planes[i]))
     def removeEmptyPlanes(self):
-        self.planes=filter(len,self.planes)
+        self.planes=list(filter(len,self.planes))
 
     def removeVertices(self,l):
         for i in range(len(self.planes)):
-            self.planes[i]=filter(lambda x,l=l:x not in l,self.planes[i])
+            self.planes[i]=list(filter(lambda x,l=l:x not in l,self.planes[i]))
         self.cleanup()
     def findDuplicateVertices(self):
         merge=[]
         processed=set()
-        for i in range(len(self.vertices)):            
+        for i in range(len(self.vertices)):
             if i in processed:
                 continue
             m=[i]
-            processed.add(i)     
+            processed.add(i)
             for j in range(i+1,len(self.vertices)):
                 if j in processed:
-                    continue            
+                    continue
                 if (self.vertices[i]-self.vertices[j]).length()<1e-5:
                     m.append(j)
                     processed.add(j)
-            merge.append(m)            
+            merge.append(m)
         return merge
     def removeDuplicateVertices(self):
         merge=self.findDuplicateVertices()
@@ -66,7 +66,7 @@ class ConvexShape:
                     if i in m:
                         fixedplane.append(m[0])
                         break
-            self.planes.append(fixedplane)                            
+            self.planes.append(fixedplane)
         self.cleanup()
     def removeDegenerateSegments(self):
         self.removeDuplicateVertices()
@@ -81,12 +81,12 @@ class ConvexShape:
                 else:
                     fixedplane.append(i)
                     last=i
-            self.planes.append(fixedplane)                            
+            self.planes.append(fixedplane)
         self.cleanup()
-        
+
     def move(self,v,r=None):
         if r is None:
-            r=range(len(self.vertices))
+            r=list(range(len(self.vertices)))
         for i in r:
             w=self.vertices[i]
             self.vertices[i]=Vector(w[0]+v[0],w[1]+v[1],w[2]+v[2])
@@ -185,9 +185,9 @@ class ConvexShape:
             return l
         m=self.meanPoint(l)
         e1,e2,normal=self.planeBasis(l)
-        ll=map(lambda i,m=m,e1=e1,e2=e2,v=self.vertices:(atan2(e1*(v[i]-m),e2*(v[i]-m)),i),l)
+        ll=list(map(lambda i,m=m,e1=e1,e2=e2,v=self.vertices:(atan2(e1*(v[i]-m),e2*(v[i]-m)),i),l))
         ll.sort()
-        return map(lambda x:x[1],ll)
+        return [x[1] for x in ll]
 
     def meanPoint(self,l):
         v=Vector(0.0,0.0,0.0)
@@ -216,7 +216,7 @@ class ConvexShape:
                 if plane[j] in l and plane[j+1] in l:
                     continue
                 key=min(plane[j],plane[j+1]),max(plane[j],plane[j+1])
-                if vdic.has_key(key):
+                if key in vdic:
                     cutplane.append(vdic[key])
                 else:
                     a=self.vertices[plane[j]]
@@ -242,7 +242,7 @@ class ConvexShape:
 
         self.removeVertices(l)
         self.removeDegenerateSegments()
-        
+
     def cube(self,a=1.0):
         d=len(self.vertices)
         self.vertices.append(Vector(-a,-a,-a))
@@ -298,14 +298,14 @@ class ConvexShape:
         p=self.planes
         merge=[]
         processed=set()
-        for i in range(len(p)):            
+        for i in range(len(p)):
             if i in processed:
                 continue
             m=[i]
-            processed.add(i)     
+            processed.add(i)
             for j in range(i+1,len(p)):
                 if j in processed:
-                    continue            
+                    continue
                 if self.samePlane(self.planes[i],self.planes[j]):
                     m.append(j)
                     processed.add(j)
@@ -330,7 +330,7 @@ class ConvexShape:
         coordIndex [
     """)
         for l in self.planes:
-            f.write("      %s,%d,-1,\n"%(join(map(str,l),","),l[0]))
+            f.write("      %s,%d,-1,\n"%(join(list(map(str,l)),","),l[0]))
         f.write("""
         ]
       }

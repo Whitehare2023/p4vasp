@@ -52,7 +52,7 @@ class BasicOpenGLPaint3D(Paint3DInterface):
         glLightfv (light, GL_DIFFUSE, (color[0],color[1],color[2]))
         glEnable (light)
         glEnable (GL_LIGHTING)
-        
+
     def colorMaterial(self, color=None, name=None):
         glColorMaterial (GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
         glEnable (GL_COLOR_MATERIAL)
@@ -220,7 +220,7 @@ class GLUTPaint3D(OpenGLPaint3DRecorder):
         self.height=height
         glutPostRedisplay()
 
-    def glutinit(self,name="Paint 3D",width=640,height=400):        
+    def glutinit(self,name="Paint 3D",width=640,height=400):
         glutInit(sys.argv)
         self.width=width
         self.height=height

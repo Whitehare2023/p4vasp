@@ -58,17 +58,23 @@ in order to avoid exceptions.
 
 
 from math import sqrt,acos,sin,cos
-from string import joinfields, split, atof, atoi,join
 from types import *
 from _cp4vasp import *
-from UserList import *
+from collections import *
 import p4vasp.matrix
 
-try:
-    if StringType not in StringTypes:
-        raise "This can't be true: StringType not in StringTypes !!!"
-except NameError:
-    StringTypes=(StringType,UnicodeType)
+StringTypes=(str,)
+ListType=list
+TupleType=tuple
+IntType=int
+FloatType=float
+ComplexType=complex
+
+def split(value):
+    return value.split()
+
+def join(values, separator=" "):
+    return separator.join(values)
 
 
 def isCMatrix(obj):
@@ -126,15 +132,15 @@ class Vector(p4vasp.matrix.Vector):
         elif isCVector(x):
             self.pointer = clone3d(x.pointer)
         elif type(x) in StringTypes:
-            x,y,z=map(float,split(x))
+            x,y,z=list(map(float,split(x)))
             self.pointer=createvec3d(x,y,z)
         elif (type(x) in [ListType,TupleType]) or isinstance(x,UserList):
-            x,y,z=map(float,x)
+            x,y,z=list(map(float,x))
             self.pointer=createvec3d(x,y,z)
         elif type(x) in [IntType,FloatType,ComplexType]:
             self.pointer=createvec3d(x,y,z)
         else:
-            raise "Unknown init parameters in Vector(%s,%s,%s)"%(repr(x),repr(y),repr(z))
+            raise TypeError("Unknown init parameters in Vector(%s,%s,%s)"%(repr(x),repr(y),repr(z)))
 
     def __add__(s,o):
         "Vector addition."
@@ -143,7 +149,7 @@ class Vector(p4vasp.matrix.Vector):
         elif isVector(o):
             return Vector(s[0]+o[0],s[1]+o[1],s[2]+o[2])
         else:
-            raise TypeError, "other is no vector in vector addition"
+            raise TypeError("other is no vector in vector addition")
 
     __radd__=__add__
 
@@ -154,7 +160,7 @@ class Vector(p4vasp.matrix.Vector):
         elif isVector(o):
             return Vector(s[0]-o[0],s[1]-o[1],s[2]-o[2])
         else:
-            raise TypeError, "other is no vector in vector subtraction"
+            raise TypeError("other is no vector in vector subtraction")
 
     def __rsub__(s,o):
         "Vector subtraction."
@@ -163,7 +169,7 @@ class Vector(p4vasp.matrix.Vector):
         elif isVector(o):
             return Vector(o[0]-s[0],o[1]-s[1],o[2]-s[2])
         else:
-            raise TypeError, "other is no vector in right vector subtraction"
+            raise TypeError("other is no vector in right vector subtraction")
 
     def __neg__(self):
         "Negative Vector (-v)"
@@ -184,7 +190,7 @@ class Vector(p4vasp.matrix.Vector):
                 sum+=self[i]*o[i]
             return sum
         elif isMatrix(other):
-            raise TypeError, "other must not be a matrix"
+            raise TypeError("other must not be a matrix")
         else:
             return Vector(pointer=createscalmultiply3d(self.pointer,float(other)))
 
@@ -203,7 +209,7 @@ class Vector(p4vasp.matrix.Vector):
                           self[2]*other[0]-self[0]*other[2],
                           self[0]*other[1]-self[1]*other[0])
         else:
-            raise TypeError, "other is no vector in cross product"
+            raise TypeError("other is no vector in cross product")
 
     def length(self):
         "Length of vector."
@@ -213,7 +219,7 @@ class Vector(p4vasp.matrix.Vector):
         "Normalized vector. The result has *length()=1* ."
         l=veclength3d(self.pointer)
         if l == 0:
-            raise ZeroDivisionError, "self is a zero-length vector"
+            raise ZeroDivisionError("self is a zero-length vector")
         else:
             return Vector(pointer=createscaldivide3d(self.pointer,l))
 
@@ -226,9 +232,9 @@ class Vector(p4vasp.matrix.Vector):
             if tmp>=-1.0 and tmp <=1.0:
                 return acos(tmp)
             else:
-                raise "domain error in function acos()!"
+                raise ValueError("domain error in function acos()!")
         else:
-            raise TypeError, "other is no vector"
+            raise TypeError("other is no vector")
 
     def __str__(self):
         "String representation: values separated by whitespace."
@@ -352,14 +358,14 @@ class Matrix(p4vasp.matrix.Matrix):
             return Matrix(pointer=createplusmat3d(self.pointer,other.pointer))
         elif isMatrix(other):
             if (other.m!=3) or (other.n!=3):
-                raise TypeError,"ranks differ in additon (3,3)!=(%d,%d)."%(other.m,other.n)
+                raise TypeError("ranks differ in additon (3,3)!=(%d,%d)."%(other.m,other.n))
             tmp=Matrix()
             for i in range(0,len(self)):
                 for j in range(0,len(x)):
                     tmp.set(i,j,self.get(i,j)+other[i][j])
             return tmp
         else:
-            raise TypeError,"error in matrix addition"
+            raise TypeError("error in matrix addition")
 
     __radd__=__add__
 
@@ -369,14 +375,14 @@ class Matrix(p4vasp.matrix.Matrix):
             return Matrix(pointer=createminusmat3d(self.pointer,other.pointer))
         elif isMatrix(other):
             if (other.m != 3) or (other.n != 3):
-                raise TypeError,"ranks differ in subtraction (3,3)!=(%d,%d)."%(other.m,other.n)
+                raise TypeError("ranks differ in subtraction (3,3)!=(%d,%d)."%(other.m,other.n))
             tmp=Matrix()
             for i in range(0,len(self)):
                 for j in range(0,len(x)):
                     tmp.set(i,j,self.get(i,j)-other[i][j])
             return tmp
         else:
-            raise TypeError,"error in matrix subtraction"
+            raise TypeError("error in matrix subtraction")
 
     def __rsub__(self,other):
         "Matrix subtraction."
@@ -384,14 +390,14 @@ class Matrix(p4vasp.matrix.Matrix):
             return Matrix(pointer=createminusmat3d(other.pointer,self.pointer))
         elif isMatrix(other):
             if (other.m != 3) or (other.n != 3):
-                raise TypeError,"ranks differ in subtraction (3,3)!=(%d,%d)."%(other.m,other.n)
+                raise TypeError("ranks differ in subtraction (3,3)!=(%d,%d)."%(other.m,other.n))
             tmp=Matrix()
             for i in range(0,len(self)):
                 for j in range(0,len(x)):
                     tmp.set(i,j,-self.get(i,j)+other[i][j])
             return tmp
         else:
-            raise TypeError,"error in matrix subtraction"
+            raise TypeError("error in matrix subtraction")
 
 
     def __neg__(self):
@@ -407,7 +413,7 @@ class Matrix(p4vasp.matrix.Matrix):
             return Vector(pointer=createmultiplymatvec3d(self.pointer,other.pointer))
         elif isMatrix(other):
             if other.n!=3 or other.m!=3:
-                raise TypeError,"ranks differ in matrix multiplication (3,3)!=(%d,%d)."%(other.m,other.n)
+                raise TypeError("ranks differ in matrix multiplication (3,3)!=(%d,%d)."%(other.m,other.n))
             tmp=Matrix()
             for i in range(3):
                 for j in range(3):
@@ -416,14 +422,14 @@ class Matrix(p4vasp.matrix.Matrix):
             return tmp
         elif isVector(other):
             if len(other)!=3:
-                raise TypeError,"ranks differ in matrix*vector multiplication Matrix(3,3)*Vector(%d)."%(len(other))
+                raise TypeError("ranks differ in matrix*vector multiplication Matrix(3,3)*Vector(%d)."%(len(other)))
             tmp=Vector(other[0],other[1],other[2])
             mulmatvec3d(self.pointer,tmp.pointer)
             return tmp
         elif type(other) in (IntType,FloatType):
             return Matrix(pointer=createmultiplymatscal3d(self.pointer,float(other)))
         else:
-            raise TypeError,"unknown type in matrix multiplication"
+            raise TypeError("unknown type in matrix multiplication")
 
     def __rmul__(self,other):
         "Multiplication with *other* matrix."
@@ -431,7 +437,7 @@ class Matrix(p4vasp.matrix.Matrix):
             return Matrix(pointer=createmultiplymatmat3d(other.pointer,self.pointer))
         elif isMatrix(other):
             if (other.n!=3) or (other.m!=3):
-                raise TypeError,"ranks differ in matrix multiplication (3,3)!=(%d,%d)."%(other.m,other.n)
+                raise TypeError("ranks differ in matrix multiplication (3,3)!=(%d,%d)."%(other.m,other.n))
             tmp=Matrix()
             for i in range(3):
                 for j in range(3):
@@ -439,7 +445,7 @@ class Matrix(p4vasp.matrix.Matrix):
                         tmp.set(i,j,tmp.get(i,j)+other.get(i,k)*self.get(k,j))
             return tmp
         else:
-            raise TypeError,"error in right matrix multiplication"
+            raise TypeError("error in right matrix multiplication")
 
     def det(self):
         "Determinant - defined for 3x3 matrix only."
@@ -457,7 +463,7 @@ class Matrix(p4vasp.matrix.Matrix):
             a,b,c,d=v
             return a*d-b*c
         else:
-            raise TypeError, "subdeterminants of third order defined only"
+            raise TypeError("subdeterminants of third order defined only")
 
     def inverse(self):
         "Inverse matrix (for 3x3 matrix only). Implemented (mostly) in python."
@@ -469,7 +475,7 @@ class Matrix(p4vasp.matrix.Matrix):
                     M.set(i,j,(-1)**(i+j)*self.subDet(j,i)/D)
             return M
         else:
-            raise TypeError, "subdeterminants of third order defined only"
+            raise TypeError("subdeterminants of third order defined only")
 
     def clone(self):
         "Create a copy of the matrix."
@@ -542,53 +548,53 @@ ez=Vector(0.,0.,1.)
 
 if __name__=="__main__":
     from time import clock
-    import matrix
-    print "create v"
+    from . import matrix
+    print("create v")
     v=Vector(1,2,3)
-    print v
-    print "create A"
+    print(v)
+    print("create A")
     A=Matrix()
-    print A
-    print "identity"
+    print(A)
+    print("identity")
     A.identity()
-    print A
+    print(A)
     w=A[1]
-    print "A[1]"
-    print w
-    print A[1]
+    print("A[1]")
+    print(w)
+    print((A[1]))
 
-    print "w",w[0],w[1],w[2]
+    print(("w",w[0],w[1],w[2]))
     A.set(1,2,3)
-    print "set 1,2,3"
-    print A
-    print "A[0][2]=5"
+    print("set 1,2,3")
+    print(A)
+    print("A[0][2]=5")
     A[0][2]=5
-    print A
-    print "clone"
+    print(A)
+    print("clone")
     B=A.clone()
-    print B
-    print "B.set..."
+    print(B)
+    print("B.set...")
     B.set(0,0,2)
     B.set(0,1,4)
-    print B
-    print "B[2][2]+=1"
+    print(B)
+    print("B[2][2]+=1")
     B[2][2]+=1
-    print B
+    print(B)
 
     A.trans()
 
-    print repr(A)
-    print A
-    print A*v
+    print((repr(A)))
+    print(A)
+    print((A*v))
 
-    print "A",A
-    print "B",B
-    print "B*A",B*A
-    print "del A"
+    print(("A",A))
+    print(("B",B))
+    print(("B*A",B*A))
+    print("del A")
     del A
-    print "del B"
+    print("del B")
     del B
-    print "END test 1"
+    print("END test 1")
 
     c=clock()
     m=Vector(0,0,0)
@@ -596,7 +602,7 @@ if __name__=="__main__":
         m=m+m
     dc=clock()-c
     cdc=dc
-    print "C      vector addition clock",dc
+    print(("C      vector addition clock",dc))
 
     c=clock()
     m=matrix.Vector(0,0,0)
@@ -604,9 +610,9 @@ if __name__=="__main__":
         m=m+m
     dc=clock()-c
     pdc=dc
-    print "python vector addition clock",dc
-    print "p/c",pdc/cdc
-    print
+    print(("python vector addition clock",dc))
+    print(("p/c",pdc/cdc))
+    print()
 
     c=clock()
     m=Matrix()
@@ -614,7 +620,7 @@ if __name__=="__main__":
         m=m*m
     dc=clock()-c
     cdc=dc
-    print "C      matrix multiply clock",dc
+    print(("C      matrix multiply clock",dc))
 
     c=clock()
     m=matrix.Matrix()
@@ -622,9 +628,9 @@ if __name__=="__main__":
         m=m*m
     dc=clock()-c
     pdc=dc
-    print "python matrix multiply clock",dc
-    print "p/c",pdc/cdc
-    print
+    print(("python matrix multiply clock",dc))
+    print(("p/c",pdc/cdc))
+    print()
 
 #A.set([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0])
 #B=Matrix()

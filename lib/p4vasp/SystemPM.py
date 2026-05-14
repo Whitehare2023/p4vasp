@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #
 # HappyDoc:docStringFormat='ClassicStructuredText'
 #
@@ -99,7 +99,7 @@ Following calculation properties are available:
 
   example:
 
-    #!/usr/bin/python2
+    #!/usr/bin/python3
     from p4vasp.SystemPM import *
     s=XMLSystemPM('vasprun.xml')
     poscar=s.INITIAL_STRUCTURE
@@ -115,7 +115,7 @@ Following calculation properties are available:
 
 """
 
-from __future__ import generators
+
 
 from p4vasp import *
 from p4vasp.util import *
@@ -128,10 +128,21 @@ from string import *
 from p4vasp.util import *
 import traceback
 import os
-import cp4vasp
 from p4vasp.Structure import *
-import p4vasp.cStructure
 import p4vasp.repository as repository
+
+try:
+    import cp4vasp
+    import p4vasp.cStructure
+    _cp4vasp_import_error=None
+except Exception as e:
+    cp4vasp=None
+    _cp4vasp_import_error=e
+
+def _require_cp4vasp():
+    if cp4vasp is None:
+        raise ImportError("cp4vasp extension is not available") from _cp4vasp_import_error
+    return cp4vasp
 
 
 #def systemlist():
@@ -210,7 +221,7 @@ class KpointList(VArray):
         if w is None:
             w=[[1]]*len(self)
         for i in range(len(self)):
-            v=map(float,self[i])
+            v=list(map(float,self[i]))
             s+="%+18.14f %+18.14f %+18.14f %f\n"%(v[0],v[1],v[2],float(w[i][0]))
         return s
 
@@ -230,11 +241,11 @@ class KpointGeneration(p4vasp.Dictionary.Dictionary):
             return "Automatic mesh\n0\n%s\n%s\n"%(t,str(self["subdivisionlength"]))
         elif  t[0] in ["G","M"]:
             try:
-                d=map(int,self["divisions"])
+                d=list(map(int,self["divisions"]))
             except:
                 d=(1,1,1)
             try:
-                s=map(float,self["usershift"])
+                s=list(map(float,self["usershift"]))
             except:
                 s=(0.0,0.0,0.0)
             return  "Automatic mesh\n0\n%s\n%d %d %d\n%f %f %f\n"%(
@@ -248,13 +259,13 @@ class KpointGeneration(p4vasp.Dictionary.Dictionary):
 class ChgcarStatisticsLateList(LateList):
     def __init__(self,chgcar,coord=0):
         if coord==0:
-            plist=range(chgcar.nx)
+            plist=list(range(chgcar.nx))
         elif coord==1:
-            plist=range(chgcar.ny)
+            plist=list(range(chgcar.ny))
         elif coord==2:
-            plist=range(chgcar.nz)
+            plist=list(range(chgcar.nz))
         else:
-            raise "Invalid coord in ChgcarStatisticsLateList"
+            raise RuntimeError("Invalid coord in ChgcarStatisticsLateList")
         LateList.__init__(self,plist)
         self.chgcar=chgcar
         self.coord=coord
@@ -331,6 +342,7 @@ class SystemPM(PropertyManager):
         p=os.path.join(x.manager.PATH,f)
         msg().message("get Charge file %s"%p)
         if os.path.isfile(p):
+            cp4vasp=_require_cp4vasp()
             c=cp4vasp.Chgcar()
             c.read(str(p))
             return c
@@ -350,10 +362,11 @@ class SystemPM(PropertyManager):
         p=os.path.join(x.manager.PATH,f)
         msg().message("read %s from %s"%(f,p))
         if os.path.isfile(p):
+            cp4vasp=_require_cp4vasp()
             c=cp4vasp.Chgcar()
             g=c.createReadProcess(str(p))
             yield 1
-            while g.next():
+            while next(g):
                 s=g.error()
                 if s is not None:
                     msg().error(s)
@@ -399,9 +412,11 @@ class StructureSequenceLateList(LateList):
 class cStructureSequenceLateList(LateList):
     def __init__(self,plist,atominfo):
         LateList.__init__(self,plist)
+        _require_cp4vasp()
         self.atominfo=p4vasp.cStructure.AtomInfo(atominfo)
 
     def parse(self,x):
+        cp4vasp=_require_cp4vasp()
         f=x.getElementsByTagName("structure")
         a=p4vasp.cStructure.Structure(pointer=cp4vasp.createStructure(f[0].this).this)
         a.info.setAtomInfo(self.atominfo)
@@ -1050,7 +1065,7 @@ class XMLSystemPM(SystemPM):
         s=self.fetchStructure(x,"primitive_cell","primitive cell")
         # Temporary hack which allows to display structure even without correct atominfo
         s.info = AtomInfo(s.info)
-        s.info.downscale(len(self.INITIAL_STRUCTURE)/len(s))
+        s.info.downscale(len(self.INITIAL_STRUCTURE)//len(s))
         return s
 
     def getForceConstants(self,x):
@@ -1162,25 +1177,25 @@ if __name__=="__main__":
     system=getSystem("../vasprun_bands.xml")
 #  ev=system.PARTIAL_DOS
 #  ev=system.PROJECTED_EIGENVALUES
-    print system.KPOINTS.generation.toxml()
+    print((system.KPOINTS.generation.toxml()))
 
     ev=system.EIGENVALUES
 
-    print
-    print ev.toxml()
-    print "fields:"
+    print()
+    print((ev.toxml()))
+    print("fields:")
     for f in ev.field:
-        print "  ",f
-    print
+        print(("  ",f))
+    print()
 
-    print "dimensions:"
+    print("dimensions:")
     x=ev
     for i in range(len(ev.dimension)):
-        print "  %2d %10s %3d"%(i,ev.dimension[-(i+1)],len(x))
+        print(("  %2d %10s %3d"%(i,ev.dimension[-(i+1)],len(x))))
         try:
             x=x[0]
         except:
-            print "END"
+            print("END")
 
 
 class SystemPM_URL_Attribute(AttributeProfile):

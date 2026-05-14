@@ -20,13 +20,13 @@ class PoscarExporter(Exporter):
                 if i==0:
                     structure.write(f,newformat=False,closeflag=False)
                 else:
-                    if (structure.isSelective()): 
-                        for i in range(0,len(structure)): 
-                            f.write(str(structure[i])+" "+xmlrepr(structure.selective[i],LOGICAL_TYPE)+"\n") 
-                    else: 
-                        for i in range(0,len(structure)): 
-                            f.write(str(structure[i])+"\n") 
-                    f.write("\n") 
+                    if (structure.isSelective()):
+                        for i in range(0,len(structure)):
+                            f.write(str(structure[i])+" "+xmlrepr(structure.selective[i],LOGICAL_TYPE)+"\n")
+                    else:
+                        for i in range(0,len(structure)):
+                            f.write(str(structure[i])+"\n")
+                    f.write("\n")
 
                 msg().step(structureindex,sequencelength)
                 yield 1

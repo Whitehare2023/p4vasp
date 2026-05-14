@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
 #  (see http://cms.mpi.univie.ac.at/vasp/Welcome.html)
@@ -29,18 +29,18 @@ p=Structure("CONTCAR")
 p.setCarthesian()
 l1=decode("-160",p)
 l2=decode("161-",p)
-print "Group 1 has %3d elements."%len(l1)
-print "Group 2 has %3d elements."%len(l2)
+print(("Group 1 has %3d elements."%len(l1)))
+print(("Group 2 has %3d elements."%len(l2)))
 
 d=[]
 for i in l1:
     for j in l2:
         if i==j:
-            print "Substructures have a common atom %d."%(i+1)
+            print(("Substructures have a common atom %d."%(i+1)))
         else:
             d.append((p.mindistCartVectors(p[i],p[j]),i,j))
 
 m,i,j=min(d)
-print "Minimal distance:",m
-print "for atoms %3d    "%i,p[i]
-print "          %3d    "%j,p[j]
+print(("Minimal distance:",m))
+print(("for atoms %3d    "%i,p[i]))
+print(("          %3d    "%j,p[j]))

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -54,7 +54,7 @@ class LatticeApplet(Applet):
             self.widgets.c_entry.set_sensitive(True)
             self.widgets.alpha_entry.set_sensitive(True)
             self.widgets.beta_entry.set_sensitive(True)
-            self.widgets.gamma_entry.set_sensitive(True)           
+            self.widgets.gamma_entry.set_sensitive(True)
     def on_monoclinic_radiobutton_toggled_handler(self,w,*arg):
         if w.get_active():
             self.toMonoclinic()
@@ -75,23 +75,23 @@ class LatticeApplet(Applet):
             self.toCubic()
 
     def on_parameter_updated_handler(self,*arg):
-        print "on_parameter_updated",self.allow_parameters_update,self.allow_cell_update
+        print(("on_parameter_updated",self.allow_parameters_update,self.allow_cell_update))
         if self.allow_parameters_update:
             self.allow_parameters_update=False
-            print "self.allow_parameters_update=False [[["
+            print("self.allow_parameters_update=False [[[")
             self.fixParameters()
             self.updateCell()
             self.allow_parameters_update=True
-            print "self.allow_parameters_update=True  ]]]"
+            print("self.allow_parameters_update=True  ]]]")
 
     def on_cell_updated_handler(self,*arg):
         if self.allow_cell_update:
-            print "on_cell_updated_handler",self.allow_cell_update,self.allow_parameters_update
+            print(("on_cell_updated_handler",self.allow_cell_update,self.allow_parameters_update))
             self.allow_cell_update=False
-            print "self.allow_cell_update=False       [[["
+            print("self.allow_cell_update=False       [[[")
             self.updateParameters()
             self.allow_cell_update=True
-            print "self.allow_cell_update=True        ]]]"
+            print("self.allow_cell_update=True        ]]]")
 
     def on_apply_button_clicked_handler(self,*arg):
         b1,b2,b3 = self.getCell()
@@ -207,13 +207,13 @@ class LatticeApplet(Applet):
         alpha=self.getParameter("alpha")*pi/180
         beta=self.getParameter("beta")*pi/180
         gamma=self.getParameter("gamma")*pi/180
-        
+
         cosA=cos(alpha)
         cosB=cos(beta)
         cosC=cos(gamma)
         sinC=sin(gamma)
 
-        b1=Vector(a,0.0,0.0)        
+        b1=Vector(a,0.0,0.0)
         b2=Vector(cosC,sinC,0.0)*b
         try:
             x=cosB
@@ -223,7 +223,7 @@ class LatticeApplet(Applet):
         except:
             b3=Vector(0.0,0.0,0.0)
         self.setBasis((b1,b2,b3))
-        
+
     def updateSystem(self,x=None):
         if not self.in_apply:
             s=self.getCurrentStructure()
@@ -231,7 +231,7 @@ class LatticeApplet(Applet):
             self.updateParameters()
 
     def setBasis(self,basis):
-        print "setBasis"
+        print("setBasis")
         s=self.getCurrentStructure()
         self.widgets.a11.set_text("%17.15f"%(basis[0][0]))
         self.widgets.a12.set_text("%17.15f"%(basis[0][1]))
@@ -268,5 +268,5 @@ class LatticeApplet(Applet):
         self.widgets.gamma_entry.set_text(str(gamma))
     def initUI(self):
         pass
-        
+
 #BuilderApplet.store_profile=AppletProfile(BuilderApplet,tagname="Builder")

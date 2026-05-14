@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -154,7 +154,7 @@ class DBApplet(Applet):
             di,rec=self.model.query.get(l[0])
             dbi=self.model.query.container[di]
             Id=rec[0]
-            print "selected",Id,dbi.name,di,rec
+            print(("selected",Id,dbi.name,di,rec))
             systemlist().setTemporaryActive(SQLSystemPM(dbi,Id))
             self.selected_id =Id
             self.selected_dbi=dbi
@@ -165,7 +165,7 @@ class DBApplet(Applet):
         # Create the view itself.
         if view is None:
             view = gtk.TreeView(model)
-        for i in xrange(len(self.column_label)):
+        for i in range(len(self.column_label)):
             label,resizable=self.column_label[i]
             renderer = gtk.CellRendererText()
             column = gtk.TreeViewColumn(label, renderer, text=i)

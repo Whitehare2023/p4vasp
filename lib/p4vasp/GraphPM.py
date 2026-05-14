@@ -44,7 +44,7 @@ class GraphPM(p4vasp.Property.PropertyManager):
         self.add(GraphProperty(name,path))
 
     def getGraphProperty(self,name):
-        if name in self.keys():
+        if name in list(self.keys()):
             return self[name]
         else:
             self.addGraph(name,"%s%sdata%sgraphs%s%s.agr"%(p4vasp_home,sep,sep,sep,name))

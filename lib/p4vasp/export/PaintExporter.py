@@ -95,7 +95,7 @@ class PaintExporter(Exporter):
                 paint.line(offset,offset+structure.basis[0],attributes.cell_line_width,material=self.CELLMATERIAL)
                 paint.line(offset,offset+structure.basis[1],attributes.cell_line_width,material=self.CELLMATERIAL)
                 paint.line(offset,offset+structure.basis[2],attributes.cell_line_width,material=self.CELLMATERIAL)
-            multiple=map(int,attributes.multiple)
+            multiple=list(map(int,attributes.multiple))
             for m1 in range(multiple[0]):
                 for m2 in range(multiple[1]):
                     m3=multiple[2]
@@ -143,7 +143,7 @@ class PaintExporter(Exporter):
                 paint.line(offset,offset+structure.basis[2],attributes.cell_line_width,material=self.CELLMATERIAL)
 
     def multiple(self,structure,attributes):
-        multiple=map(int,attributes.multiple)
+        multiple=list(map(int,attributes.multiple))
         total=multiple[0]*multiple[1]*multiple[2]
         step=0
         for m1 in range(multiple[0]):
@@ -153,8 +153,8 @@ class PaintExporter(Exporter):
                     offset=offset+(m2-multiple[1]/2)*structure.basis[1]
                     offset=offset+(m3-multiple[2]/2)*structure.basis[2]
                     yield step,total,m1,m2,m3,offset
-                    step+=1 
-        
+                    step+=1
+
     def exportIsosurfaces(self,paint,isosurfaces,attributes):
         for i in range(len(isosurfaces)):
             msg().status("Processing isosurface %d/%d"%(i+1,len(isosurfaces)))
@@ -199,7 +199,7 @@ class PaintExporter(Exporter):
                 structureindex=i+data.index
                 frame=paint.frame()
                 structure=self.prepareStructure(structures[structureindex],attributes)
-             
+
                 if arrows is None:
                     a=None
                 else:
@@ -234,7 +234,7 @@ class PaintExporter(Exporter):
         paint.ambientLight(Vector(0.2,0.2,0.2))
         paint.background(Vector(attributes.background))
         paint.pointLight(self.transform(Vector(30,30,30),attributes),Vector(1,1,1))
-        
+
         paint.colorMaterial(attributes.cell_color,self.CELLMATERIAL)
         paint.colorMaterial(attributes.bond_color,self.BONDMATERIAL)
         paint.colorMaterial(attributes.arrow_color,self.ARROWMATERIAL)
@@ -259,7 +259,7 @@ class PaintExporter(Exporter):
             element=self.atomtypes.getRecordForElementSafe(info.getRecordForAtom(i).element,info.speciesIndex(i))
             radius=element.radius
             paint.sphere(structure[i]+offset,radius*attributes.radius_factor,material=materials[i]);
-            
+
     def paintArrows(self,paint,structure,arrows,attributes,offset):
         info=structure.info
         materials=[]

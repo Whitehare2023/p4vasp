@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -23,11 +23,12 @@
 
 
 from p4vasp.store import *
-from UserList import UserList
+from collections import UserList
 from types import *
 from string import *
 import gtk
 import gobject
+from p4vasp.compat import create_instance_from_name
 
 class AppletNode(UserList):
     frame=None
@@ -49,12 +50,7 @@ class AppletNode(UserList):
 #    print "createApplet",self.classname,self.name
         if self.classname in ["",None]:
             return None
-        module=join(split(self.classname,".")[:-1],".")
-        if len(module):
-            cmd="import %s\ncl=%s()"%(module,self.classname)
-        else:
-            cmd="cl=%s()"%(self.classname)
-        exec cmd
+        cl=create_instance_from_name(self.classname, globals())
 #    cl.frame=self.frame
 #    cl.appletnode=self
         cl.name=self.name
@@ -100,7 +96,7 @@ class AppletNode(UserList):
     def getPath(self):
         if self.parent is not None:
             l=self.parent.getPath()
-            l.append(map(id,self.parent).index(id(self)))
+            l.append(list(map(id,self.parent)).index(id(self)))
 #      l.append(self.parent.index(self))
             return l
         else:
@@ -170,7 +166,7 @@ class AppletTreeModel(gtk.GenericTreeModel):
         try:
 #         print type(node),node
             return node[n]
-        except IndexError,TypeError:
+        except IndexError as TypeError:
             return None
     def on_iter_parent(self, node):
         '''returns the parent of this node'''
@@ -247,17 +243,17 @@ def test():
     tree1=sp.loadAll("applettree-test.xml")
     sp.writeAll("applettree-test1.xml",tree)
     for x in tree1:
-        print x,tree1.index(x),x.getPath(),id(x)
+        print((x,tree1.index(x),x.getPath(),id(x)))
 #  raise SystemExit
-    print "tree:"
-    print tree
+    print("tree:")
+    print(tree)
     for x in tree:
-        print x
+        print(x)
 
-    print "tree1:"
-    print tree1
+    print("tree1:")
+    print(tree1)
     for x in tree1:
-        print x
+        print(x)
 
 
     win=gtk.Window()

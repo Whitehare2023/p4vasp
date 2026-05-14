@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 from p4vasp.SystemPM import *
 from glob import glob
@@ -12,7 +12,7 @@ def visit(arg,d,l):
         s=XMLSystemPM("%s/vasprun.xml"%d)
         try:
             force =s.FORCES_SEQUENCE_L[-1]
-            maxf= max(map(lambda x:x.length(),force))
+            maxf= max([x.length() for x in force])
             sforce="%10.6f"%maxf
         except:
             sforce="          "
@@ -40,7 +40,7 @@ def visit(arg,d,l):
         except:
             steps="   "
             traceback.print_exc()
-        print "%s %s %s %s %s %s"%(name,steps,energy,fermi,sforce,d)
+        print(("%s %s %s %s %s %s"%(name,steps,energy,fermi,sforce,d)))
         f1.write("%s %s %s %s %s %s\n"%(name,steps,energy,fermi,sforce,d))
         f2.write("%s,%s,%s,%s,%s,%s\n"%(name,steps,energy,fermi,sforce,d))
 

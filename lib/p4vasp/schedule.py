@@ -22,7 +22,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from UserList import *
+from collections import *
 from p4vasp.message import *
 
 
@@ -35,7 +35,7 @@ class Process:
         return None
     def error(self):
         return None
-    def next(self):
+    def __next__(self):
         return 0
 
 
@@ -43,12 +43,12 @@ class Scheduler(UserList):
     def __init__(self):
         UserList.__init__(self)
 
-    def next(self):
+    def __next__(self):
         while 1:
             if len(self)==0:
                 return
             try:
-                return self[0].next()
+                return next(self[0])
             except StopIteration:
 #        print "delete finished"
                 del self[0]
@@ -58,7 +58,7 @@ class Scheduler(UserList):
             if len(self)==0:
                 return
             try:
-                self[0].next()
+                next(self[0])
             except StopIteration:
                 del self[0]
 

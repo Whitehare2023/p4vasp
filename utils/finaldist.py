@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
 #  (see http://cms.mpi.univie.ac.at/vasp/Welcome.html)
@@ -23,7 +23,7 @@ from p4vasp.SystemPM import *
 s=XMLSystemPM('vasprun.xml')
 p=s.FINAL_STRUCTURE
 f=open("finaldist.csv","w")
-f.write(",,"+join(map(str,range(1,len(p)+1)),",")+"\n,")
+f.write(",,"+join(list(map(str,list(range(1,len(p)+1)))),",")+"\n,")
 for i in range(len(p)):
     f.write(',"%s"'%strip(p.info[p.speciesIndex(i)].element))
 f.write("\n")

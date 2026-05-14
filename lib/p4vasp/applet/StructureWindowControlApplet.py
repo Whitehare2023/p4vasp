@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -20,7 +20,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from __future__ import generators
+
 import gtk
 import gobject
 from p4vasp import *
@@ -359,7 +359,7 @@ class StructureWindowControlApplet(Applet,p4vasp.Selection.SelectionListener):
             for i in a:
                 if i>=0 and i<l:
                     info.getRecord(i).hidden=0
-            self.hidden=filter(lambda i,f=info.getRecord:f(i).hidden,range(l))
+            self.hidden=list(filter(lambda i,f=info.getRecord:f(i).hidden,list(range(l))))
         self.swin().updateStructure()
 
     def on_hide_button_clicked_handler(self,*arg):
@@ -370,7 +370,7 @@ class StructureWindowControlApplet(Applet,p4vasp.Selection.SelectionListener):
             for i in a:
                 if i>=0 and i<l:
                     info.getRecord(i).hidden=1
-            self.hidden=filter(lambda i,f=info.getRecord:f(i).hidden,range(l))
+            self.hidden=list(filter(lambda i,f=info.getRecord:f(i).hidden,list(range(l))))
         self.swin().updateStructure()
 
     def on_showonly_button_clicked_handler(self,*arg):
@@ -383,7 +383,7 @@ class StructureWindowControlApplet(Applet,p4vasp.Selection.SelectionListener):
             for i in a:
                 if i>=0 and i<l:
                     info.getRecord(i).hidden=0
-            self.hidden=filter(lambda i,f=info.getRecord:f(i).hidden,range(l))
+            self.hidden=list(filter(lambda i,f=info.getRecord:f(i).hidden,list(range(l))))
         self.swin().updateStructure()
 
     def on_hideonly_button_clicked_handler(self,*arg):
@@ -396,7 +396,7 @@ class StructureWindowControlApplet(Applet,p4vasp.Selection.SelectionListener):
             for i in a:
                 if i>=0 and i<l:
                     info.getRecord(i).hidden=1
-            self.hidden=filter(lambda i,f=info.getRecord:f(i).hidden,range(l))
+            self.hidden=list(filter(lambda i,f=info.getRecord:f(i).hidden,list(range(l))))
         self.swin().updateStructure()
 
     def on_showcell_button_clicked_handler(self,*arg):
@@ -512,7 +512,7 @@ class StructureWindowControlApplet(Applet,p4vasp.Selection.SelectionListener):
                     c=cp4vasp.Chgcar()
                     g=c.createReadProcess(s)
                     yield 1
-                    while g.next():
+                    while next(g):
                         st=g.error()
                         if st is not None:
                             msg().error(st)
@@ -549,7 +549,7 @@ class StructureWindowControlApplet(Applet,p4vasp.Selection.SelectionListener):
                         self.subtrchgcar=cp4vasp.Chgcar()
                         g=self.subtrchgcar.createReadProcess(s)
                         yield 1
-                        while g.next():
+                        while next(g):
                             st=g.error()
                             if st is not None:
                                 msg().error(st)

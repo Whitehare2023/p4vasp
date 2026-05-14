@@ -52,6 +52,7 @@ Basic types:
 
 import os
 import os.path
+from p4vasp.compat import *
 import p4vasp.message
 import p4vasp.schedule
 import sys
@@ -59,14 +60,16 @@ import sys
 try:
     from p4vasp.config import *
 except:
-    p4vasp_home = "/usr/lib/p4vasp"
+    p4vasp_home = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+    if not os.path.isdir(os.path.join(p4vasp_home, "data")):
+        p4vasp_home = "/usr/lib/p4vasp"
 
 #Indentaion string - two whitespaces by default.
 INDENT        = "  "
-INT_TYPE      = intern("int")
-STRING_TYPE   = intern("string")
-LOGICAL_TYPE  = intern("logical")
-FLOAT_TYPE    = intern("float")
+INT_TYPE      = sys.intern("int")
+STRING_TYPE   = sys.intern("string")
+LOGICAL_TYPE  = sys.intern("logical")
+FLOAT_TYPE    = sys.intern("float")
 
 try:
     p4vasp_home = os.environ["P4VASP_HOME"]

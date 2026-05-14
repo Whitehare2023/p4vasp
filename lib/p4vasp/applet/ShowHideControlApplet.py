@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -20,7 +20,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from __future__ import generators
+
 import gtk
 from p4vasp import *
 from p4vasp.graph import *
@@ -64,7 +64,7 @@ class ShowHideControlApplet(Applet):
 
     def on_show_button_clicked_handler(self,*arg):
         a=p4vasp.Selection.selection().getAtoms()
-        l=filter(lambda x,a=a:x not in a,self.swin().getHiddenAtoms())
+        l=list(filter(lambda x,a=a:x not in a,self.swin().getHiddenAtoms()))
         self.swin().setHiddenAtoms(l)
 
     def on_hide_button_clicked_handler(self,*arg):
@@ -77,7 +77,7 @@ class ShowHideControlApplet(Applet):
 
     def on_showonly_button_clicked_handler(self,*arg):
         a=p4vasp.Selection.selection().getAtoms()
-        l=filter(lambda x,a=a:x not in a,range(len(self.swin().structure)))
+        l=list(filter(lambda x,a=a:x not in a,list(range(len(self.swin().structure)))))
         self.swin().setHiddenAtoms(l)
 
     def on_hideonly_button_clicked_handler(self,*arg):

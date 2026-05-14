@@ -28,7 +28,7 @@ from gtk import *
 from p4vasp import *
 from p4vasp.piddle.piddle import *
 from types import *
-from UserList import *
+from collections import *
 import re
 import sys
 import traceback
@@ -103,7 +103,7 @@ class Set(UserList,Cloneable):
     def clone(self):
         s=Set()
 
-        for x in self.__dict__.keys():
+        for x in list(self.__dict__.keys()):
             if x not in ["graph","world","resolveColor","encodeColor","resolveWidth","data"]:
                 setattr(s,x,copy.deepcopy(getattr(self,x)))
         s.setGraph(self.graph)
@@ -128,10 +128,10 @@ class Set(UserList,Cloneable):
                         self.graph.world_xmin,self.graph.world_ymin,
                         self.graph.world_xmax,self.graph.world_ymax,
                         data)
-                lines =map(lambda a,g=self.graph:
+                lines =list(map(lambda a,g=self.graph:
                             (g.world2screenX(a[0]),g.world2screenY(a[1]),
                              g.world2screenX(a[2]),g.world2screenY(a[3])),
-                           lines)
+                           lines))
                 canvas.drawLines(lines)
                 canvas.drawLines(lines,self.resolveColor(self.line_color),self.resolveWidth(self.line_width))
             if self.symbol:
@@ -145,16 +145,16 @@ class Set(UserList,Cloneable):
                      self.resolveWidth(self.symbol_linewidth),
                      self.resolveColor(self.symbol_fill_color)]
                 if self.type=="xy":
-                    points=map(lambda a,g=self.graph:(g.world2screenX(a[0]),g.world2screenY(a[1])),
-                               points)
+                    points=list(map(lambda a,g=self.graph:(g.world2screenX(a[0]),g.world2screenY(a[1])),
+                               points))
                     for par[1],par[2] in points:
-                        apply(drawsym,par)
+                        drawsym(*par)
                 elif self.type=="xysize":
-                    points=map(lambda a,g=self.graph,size=self.symbol_size:(g.world2screenX(a[0]),g.world2screenY(a[1]),size*a[2]),
-                               points)
+                    points=list(map(lambda a,g=self.graph,size=self.symbol_size:(g.world2screenX(a[0]),g.world2screenY(a[1]),size*a[2]),
+                               points))
                     for par[1],par[2],par[4] in points:
 #         for par[1],par[2],s in points:
-                        apply(drawsym,par)
+                        drawsym(*par)
 
 
     def renderLegendLine(self,canvas,x0,y0,x1,y1):
@@ -424,7 +424,7 @@ class World(UserList,Cloneable):
 
     def clone(self):
         w=World()
-        for x in self.__dict__.keys():
+        for x in list(self.__dict__.keys()):
             if x not in ["symbol_table","data"]:
 #        print "clone World.%s"%x
                 setattr(w,x,copy.deepcopy(getattr(self,x)))
@@ -635,9 +635,9 @@ class World(UserList,Cloneable):
 
                         try:
                             if set.type=="xy":
-                                set.append(map(float,split(s)[:2]))
+                                set.append(list(map(float,split(s)[:2])))
                             elif set.type=="xysize":
-                                set.append(map(float,split(s)[:3]))
+                                set.append(list(map(float,split(s)[:3])))
 
                         except:
                             errors.append((s,sys.exc_info()))
@@ -1142,7 +1142,7 @@ class Axis(Cloneable):
         self.setGraph(graph)
 
     def clone(self):
-        a=apply(self.__class__,(self.graph))
+        a=self.__class__(*(self.graph))
         a.setAxis(self)
         return a
 
@@ -1647,7 +1647,7 @@ class Graph(UserList,Cloneable):
     def clone(self):
         g=Graph()
 
-        for x in self.__dict__.keys():
+        for x in list(self.__dict__.keys()):
             if x not in ["world","data","view2screenX",
                          "view2screenY",
                          "screen2viewX",
@@ -1686,8 +1686,8 @@ class Graph(UserList,Cloneable):
         ymax=[]
         ymin=[]
         for s in data:
-            mx=map(lambda x:x[0],s)
-            my=map(lambda x:x[1],s)
+            mx=[x[0] for x in s]
+            my=[x[1] for x in s]
             try:
                 xmax.append(max(mx))
                 xmin.append(min(mx))
@@ -1724,8 +1724,8 @@ class Graph(UserList,Cloneable):
         for s in data:
             Min=min(self.world_ymin,self.world_ymax)
             Max=max(self.world_ymin,self.world_ymax)
-            s=filter(lambda x,Min=Min,Max=Max:(x[1]>=Min)and(x[1]<=Max),s)
-            mx=map(lambda x:x[0],s)
+            s=list(filter(lambda x,Min=Min,Max=Max:(x[1]>=Min)and(x[1]<=Max),s))
+            mx=[x[0] for x in s]
             try:
                 xmax.append(max(mx))
                 xmin.append(min(mx))
@@ -1749,8 +1749,8 @@ class Graph(UserList,Cloneable):
         for s in data:
             Min=min(self.world_xmin,self.world_xmax)
             Max=max(self.world_xmin,self.world_xmax)
-            s=filter(lambda x,Min=Min,Max=Max:(x[0]>=Min)and(x[0]<=Max),s)
-            my=map(lambda x:x[1],s)
+            s=list(filter(lambda x,Min=Min,Max=Max:(x[0]>=Min)and(x[0]<=Max),s))
+            my=[x[1] for x in s]
             try:
                 ymax.append(max(my))
                 ymin.append(min(my))
@@ -2157,11 +2157,11 @@ class Graph(UserList,Cloneable):
         if not set:
             set=self.data
 
-        set   =filter(lambda x:x.legend,set)
+        set   =[x for x in set if x.legend]
         if not len(set):
             return None
-        widths =map(lambda x,sw=canvas.stringWidth,f=self.legend_font:
-                    sw(x.legend,f), set)
+        widths =list(map(lambda x,sw=canvas.stringWidth,f=self.legend_font:
+                    sw(x.legend,f), set))
         h=canvas.fontHeight(self.legend_font)*1.5
         lmarg=0.03
         rmarg=0.03

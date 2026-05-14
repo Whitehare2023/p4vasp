@@ -1,16 +1,16 @@
 # piddleQD.py -- a QuickDraw backend for PIDDLE
 # Copyright (C) 1999  Joseph J. Strout
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 2 of the License, or (at your option) any later version.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -63,7 +63,7 @@ _curCanvas = None
 
 # global dictionary mapping font names to QD font IDs
 _fontMap = {}
-for item in filter(lambda x:x[0]!='_',dir(Fonts)):
+for item in [x for x in dir(Fonts) if x[0]!='_']:
 	_fontMap[string.lower(item)] = Fonts.__dict__[item]
 _fontMap['system'] = Fonts.kFontIDGeneva
 _fontMap['monospaced'] = Fonts.kFontIDMonaco
@@ -76,13 +76,13 @@ class _PortSaver:
 	def __init__(self, qdcanvas):
 		self.port = Qd.GetPort()
 		Qd.SetPort(qdcanvas._window.wid)
-	
+
 	def __del__(self):
 		Qd.SetPort(self.port)
 
 class _QDCanvasWindow(W.Window):
 	"This internally-used class implements the window in which QDCanvas draws."
-	
+
 	def __init__(self, owner, size=(300,300), title="Graphics"):
 		self.owner = owner
 		size = (size[0], size[1]+16)			# leave room for info line!
@@ -90,12 +90,12 @@ class _QDCanvasWindow(W.Window):
 		self.infoline = ''
 		self.open()
 		self.lastMouse = (-1,-1)
-		
+
 	def close(self):
 		try: self.owner._noteWinClosed(self)
 		except: pass
 		W.Window.close(self)
-	
+
 	def domenu_copy(self, *args):
 		r = self._bounds
 		pict = Qd.OpenPicture(r)
@@ -108,10 +108,10 @@ class _QDCanvasWindow(W.Window):
 		# draw the content
 		try: self.owner._drawWindow()
 		except: pass
-		
+
 		# draw the info line
 		self.drawInfoLine()
-	
+
 	def drawInfoLine(self):
 		Qd.ForeColor(QuickDraw.blackColor)
 		Qd.BackColor(QuickDraw.whiteColor)
@@ -127,16 +127,16 @@ class _QDCanvasWindow(W.Window):
 		Qd.TextFace(0)
 		Qd.MoveTo( 8, height-6 )
 		Qd.DrawString(self.infoline)
-	
+
 	def do_activate(self, activate, event):
 		global _curCanvas
 		if _curCanvas == self.owner and not activate:
 			#print self.owner, "is no longer current"
 			_curCanvas = None
-		
+
 	def do_contentclick(self, point, modifiers, event):
 		if self.owner: self.owner.onClick( self.owner, point[0], point[1] )
-		
+
 	def do_char(self, char, event):
 		import Wkeys
 		(what, message, when, where, modifiers) = event
@@ -158,7 +158,7 @@ class _QDCanvasWindow(W.Window):
 		W.Window.idle(self,args)
 
 class QDCanvas( Canvas ):
-	
+
 	def __init__(self, size=(300,300), name="Graphics"):
 		"Initialize QuickDraw canvas with window size and title."
 		self._window = _QDCanvasWindow(self, size, name)
@@ -167,11 +167,11 @@ class QDCanvas( Canvas ):
 		self._penstate = Qd.GetPenState()
 		self.picture = Qd.OpenPicture(self._window._bounds)
 		self.picopen = 1
-	
+
 		self.patch = 0		# PATCH just for testing!
-	
+
 	#----------- custom QDCanvas methods -----------
-	
+
 	def __setattr__(self, attribute, value):
 		self.__dict__[attribute] = value
 		if attribute == "defaultLineColor":
@@ -184,7 +184,7 @@ class QDCanvas( Canvas ):
 		elif attribute == "defaultFont":
 			self._window.SetPort()
 			self._setFont(value)
-	
+
 	def __del__(self):
 		#print "Deleting", self
 		try: self._window.close()
@@ -203,11 +203,11 @@ class QDCanvas( Canvas ):
 			self.flush()
 		else:
 			portsaver = _PortSaver(self)
-			Qd.DrawPicture(self.picture, self._window._bounds)		
+			Qd.DrawPicture(self.picture, self._window._bounds)
 
 	def _prepareToDraw(self):
 		global _curCanvas
-		
+
 		# open the picture, if not already open
 		if not self.picopen:
 			portsaver = _PortSaver(self)
@@ -215,7 +215,7 @@ class QDCanvas( Canvas ):
 			Qd.DrawPicture( self.picture, self._window._bounds)
 			self.picture = temp
 			self.picopen = 1
-		
+
 		# and set the default drawing parameters, if we weren't the default before
 		if Qd.GetPort() != self._port: # _curCanvas != self:
 			#print "setting port to", self
@@ -248,10 +248,10 @@ class QDCanvas( Canvas ):
 					return 0	# font not found!
 
 			# cache the fontID for quicker reference next time!
-                        font.__dict__['_QDfontID'] = fontID
+			font.__dict__['_QDfontID'] = fontID
 			# font._QDfontID = fontID
 			Qd.TextFont(fontID)
-		
+
 		# now, set the size and style as well!
 		Qd.TextSize(font.size)
 		stylecode = QuickDraw.bold * font.bold + \
@@ -259,16 +259,16 @@ class QDCanvas( Canvas ):
 					QuickDraw.underline * font.underline
 		Qd.TextFace( stylecode)
 		return 1
-		
+
 	def close(self):
 		self._window.close()
 		self._window = None
-	
+
 	#------------ canvas capabilities -------------
 	def isInteractive(self):
 		"Returns 1 if onClick, onOver, and onKey events are possible, 0 otherwise."
 		return 1
-	
+
 	def canUpdate(self):
 		"Returns 1 if the drawing can be meaningfully updated over time \
 		(e.g., screen graphics), 0 otherwise (e.g., drawing to a file)."
@@ -291,7 +291,7 @@ class QDCanvas( Canvas ):
 		Qd.EraseRect( self._window._bounds )
 		_setBackColor(self.defaultFillColor)
 		if andFlush: self.flush()		# by default, we flush upon clear
-		
+
 	def flush(self):
 		"Call this when done with drawing, to indicate that the drawing \
 		should be printed/saved/blasted to screen etc."
@@ -308,7 +308,7 @@ class QDCanvas( Canvas ):
 			portsaver = _PortSaver(self)
 			self._window.infoline = str(s)
 			self._window.drawInfoLine()
-		
+
 	#------------ string/font info ------------
 	def stringWidth(self, s, font=None):
 		"Return the logical width of the string if it were drawn \
@@ -317,7 +317,7 @@ class QDCanvas( Canvas ):
 		self._prepareToDraw()
 		if font: self._setFont(font)
 		return Qd.StringWidth(s)
-	
+
 	def fontHeight(self, font=None):
 		"Find the line height of the given font."
 		portsaver = _PortSaver(self)
@@ -325,21 +325,21 @@ class QDCanvas( Canvas ):
 		if font: self._setFont(font)
 		fontinfo = Qd.GetFontInfo()
 		return fontinfo[0] + fontinfo[1] + fontinfo[3]
-	
+
 	def fontAscent(self, font=None):
 		"Find the ascent (height above base) of the given font."
 		portsaver = _PortSaver(self)
 		self._prepareToDraw()
 		if font: self._setFont(font)
 		return Qd.GetFontInfo()[0]
-	
+
 	def fontDescent(self, font=None):
 		"Find the descent (extent below base) of the given font."
 		portsaver = _PortSaver(self)
 		self._prepareToDraw()
 		if font: self._setFont(font)
 		return Qd.GetFontInfo()[1]
-		
+
 	#------------- drawing methods --------------
 
 	# Note default parameters "=None" means use the defaults
@@ -469,7 +469,7 @@ class QDCanvas( Canvas ):
 		if edgeWidth: Qd.SetPenState(self._penstate)
 
 
-	def drawPolygon(self, pointlist, 
+	def drawPolygon(self, pointlist,
 				edgeColor=None, edgeWidth=None, fillColor=None, closed=0):
 		"""drawPolygon(pointlist) -- draws a polygon
 		pointlist: a list of (x,y) tuples defining vertices
@@ -488,13 +488,13 @@ class QDCanvas( Canvas ):
 		Qd.MoveTo(pointlist[0][0], pointlist[0][1])
 		for p in pointlist[1:]:
 			Qd.LineTo(p[0],p[1])
-		
+
 		Qd.ClosePoly()
 		if filling:
 			Qd.ErasePoly(polygon)
 			if fillColor:
 				_setBackColor(self.defaultFillColor)
-		
+
 		if edgeColor:
 			if edgeColor == transparent: return
 			_setForeColor(edgeColor)
@@ -507,7 +507,7 @@ class QDCanvas( Canvas ):
 		if edgeColor:
 			_setForeColor(self.defaultLineColor)
 		if edgeWidth: Qd.SetPenState(self._penstate)
-		
+
 
 
 	def drawString(self, s, x,y, font=None, color=None, angle=0):
@@ -536,7 +536,7 @@ class QDCanvas( Canvas ):
 	def drawImage(self, image, x1,y1, x2=None,y2=None):
 		"""Draw a PIL Image into the specified rectangle.  If x2 and y2 are
 		omitted, they are calculated from the image size."""
-	
+
 		from p4vasp.piddle.PixMapWrapper import PixMapWrapper
 		pm = PixMapWrapper()	# make a QD pixel map
 		pm.fromImage(image)		# load the image into it
@@ -547,13 +547,13 @@ class QDCanvas( Canvas ):
 		Qd.BackColor(QuickDraw.whiteColor)
 		pm.blit(x1,y1,x2,y2, self._port)
 		_setForeColor(self.defaultLineColor)
-		
+
 
 #-------------------------------------------------------------------------
 
 def test():
 	global canvas
-	
+
 	# testing...
 	try:
 		canvas.close()
@@ -569,41 +569,41 @@ def test():
 	#import Image
 	#canvas.drawImage( Image.open(path), 0,0,300,300 );
 
-	def myOnClick(canvas,x,y): print "clicked %s,%s" % (x,y)
+	def myOnClick(canvas,x,y): print("clicked %s,%s" % (x,y))
 	canvas.onClick = myOnClick
 
 	def myOnOver(canvas,x,y): canvas.setInfoLine( "mouse is over %s,%s" % (x,y) )
 
 	canvas.onOver = myOnOver
 
-	def myOnKey(canvas,key,mods): print "pressed %s with modifiers %s" % (key,mods)
+	def myOnKey(canvas,key,mods): print("pressed %s with modifiers %s" % (key,mods))
 	canvas.onKey = myOnKey
-	
 
-	canvas.drawLines( map(lambda i:(i*10,0,i*10,300), range(30)) )
-	canvas.drawLines( map(lambda i:(0,i*10,300,i*10), range(30)) )
-	canvas.defaultLineColor = black		
-	
+
+	canvas.drawLines( [(i*10,0,i*10,300) for i in range(30)] )
+	canvas.drawLines( [(0,i*10,300,i*10) for i in range(30)] )
+	canvas.defaultLineColor = black
+
 	canvas.drawLine(10,200, 20,190, color=red)
 	canvas.drawEllipse( 130,30, 200,100, fillColor=yellow, edgeWidth=4 )
-	
+
 	canvas.drawArc( 130,30, 200,100, 45,50, fillColor=blue, edgeColor=navy, edgeWidth=4 )
-	
+
 	canvas.defaultLineWidth = 4
 	canvas.drawRoundRect( 30,30, 100,100, fillColor=blue, edgeColor=maroon )
 	canvas.drawCurve( 20,20, 100,50, 50,100, 160,160 )
-	
-	canvas.drawString("This is a test!", 30,130, Font(face="newyork",size=16,bold=1), 
+
+	canvas.drawString("This is a test!", 30,130, Font(face="newyork",size=16,bold=1),
 			color=green, angle=-45)
-	
+
 	polypoints = [ (160,120), (130,190), (210,145), (110,145), (190,190) ]
 	canvas.drawPolygon(polypoints, fillColor=lime, edgeColor=red, edgeWidth=3, closed=1)
-	
+
 	canvas.drawRect( 200,200,260,260, edgeColor=yellow, edgeWidth=5 )
 	canvas.drawLine( 200,260,260,260, color=green, width=5 )
 	canvas.drawLine( 260,200,260,260, color=red, width=5 )
 
-	
+
 	canvas.flush()
 
 

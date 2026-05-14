@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -73,7 +73,7 @@ class CommitApplet(Applet):
         omenu.set_menu(menu)
         omenu.show()
         I=0
-        for di in xrange(len(self.database)):
+        for di in range(len(self.database)):
             d=self.database[di]
             if d.canCommit():
                 item=gtk.MenuItem(d.name)
@@ -140,13 +140,13 @@ class CommitApplet(Applet):
             g=d.storePMgen(fsystem,name=name,keywords=keywords,date=date,description=description)
             try:
                 while 1:
-                    g.next()
+                    next(g)
                     yield 1
             except StopIteration:
                 pass
 
             msg().confirm("The calculation '%s' has been comitted to the database '%s'"%(name,d.name))
-        except Exception, e:
+        except Exception as e:
             msg().confirm_error("Commit exception: %s"%str(e))
             msg().exception()
 

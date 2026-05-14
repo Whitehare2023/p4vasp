@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -20,7 +20,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from __future__ import generators
+
 from string import split
 import copy
 from p4vasp import *
@@ -29,6 +29,7 @@ from p4vasp.graph import *
 from p4vasp.GraphPM import *
 from p4vasp.GraphCanvas import *
 from p4vasp.store import *
+from p4vasp.compat import create_instance_from_name
 import p4vasp.util
 import p4vasp.repository as repository
 
@@ -94,15 +95,15 @@ class AppletProfile(Profile):
                     x=attrib.item(i)
                     key=x.nodeName
                     if key not in exclude:
-                        if self.aprof_by_name.has_key(key):
+                        if key in self.aprof_by_name:
                             self.aprof_by_name[key].setEncodedValue(c,x.nodeValue)
                         else:
                             msg().error('Unknown tagattr attribute for %s while retrieveing %s.'%(key,self.name))
 
             for x in elem.childNodes:
                 if x.nodeType==x.ELEMENT_NODE:
-                    if self.retrieve_class_handlers.has_key(x.nodeName):
-                        apply(self.retrieve_class_handlers[x.nodeName],(x,c))
+                    if x.nodeName in self.retrieve_class_handlers:
+                        self.retrieve_class_handlers[x.nodeName](*(x,c))
                     else:
                         msg().error('Unknown tag method for <%s>.'%(x.nodeName))
 
@@ -113,19 +114,12 @@ class AppletProfile(Profile):
         flag=1
         if name is None:
             if self.object is not None:
-                cl=apply(self.object,())
+                cl=self.object(*())
                 flag=0
             else:
                 name=self.name
         if flag:
-            v=split(name,".")
-            module=join(v[:-1],".")
-            cname=v[-1]
-            cmd=""
-            if len(module):
-                cmd="import %s\n"%module
-            cmd="%scl=%s()"%(cmd,name)
-            exec cmd
+            cl=create_instance_from_name(name, globals())
 
 ##    if self.getRoot().frame is not None:
 ##      print "add applet"
@@ -435,7 +429,7 @@ class TextApplet(Applet):
                 self.setText("")
 
 def handler(*arg):
-    print "HANDLER",arg
+    print(("HANDLER",arg))
 
 class GraphApplet(Applet):
     def __init__(self):
@@ -530,7 +524,7 @@ class GraphApplet(Applet):
 
     def _canvas_motion_notify_handler(self,*arg):
         if self.canvas is not None:
-            return apply(self.canvas._motion_notify_handler,arg)
+            return self.canvas._motion_notify_handler(*arg)
 
     def show(self):
         if self.window_canvas is not None:

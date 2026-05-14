@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -20,7 +20,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from __future__ import generators
+
 
 from math import *
 from p4vasp.graph import *
@@ -28,6 +28,7 @@ from p4vasp.graph import *
 #from p4vasp.store import *
 from p4vasp.applet.Applet import *
 from p4vasp.applet.GraphWindowApplet import *
+from functools import reduce
 
 class ForcesConvergenceApplet(GraphWindowApplet):
     menupath=["Convergence","Forces"]
@@ -65,8 +66,8 @@ class ForcesConvergenceApplet(GraphWindowApplet):
                 for i in range(len(forces)):
                     msg().step(i+1,len(forces))
                     if forces[i] is not None:
-                        f=filter(lambda x:len(x)==3,forces[i])
-                        f=map(lambda x:sqrt(x[0]*x[0]+x[1]*x[1]+x[2]*x[2]),f)
+                        f=[x for x in forces[i] if len(x)==3]
+                        f=[sqrt(x[0]*x[0]+x[1]*x[1]+x[2]*x[2]) for x in f]
                         maxf.append((i+1,max(f)))
                         avgf.append((i+1,float(reduce(lambda x,y:x+y,f))/len(f)))
                     yield 1

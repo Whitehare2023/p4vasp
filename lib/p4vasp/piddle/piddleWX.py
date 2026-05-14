@@ -96,17 +96,17 @@ class _WXCanvasDefaultStatusBar(wxStatusBar):
 
     # These are terribly wrong here in the init under wxGTK but they firm up after a while
     # I think they need to be set in OnSize event
-    
-    #wxStatusBar.__init__(self, canvas.window, -1) # known to work w/ wxGTK 
+
+    #wxStatusBar.__init__(self, canvas.window, -1) # known to work w/ wxGTK
 
     wxStatusBar.__init__(self, canvas.window, -1, pos, size)  # original
     self.parentwindow = canvas.window
     self.parentwindow.SetStatusBar(self) # added because it seems to be necessary
 
-    
+
     self.SetFieldsCount(3)
 
-    self.sizeChanged = false    
+    self.sizeChanged = false
     self.text = ""
     self.old_text = ""
 
@@ -122,17 +122,17 @@ class _WXCanvasDefaultStatusBar(wxStatusBar):
 
     self.quitButton= wxButton(self, qID, "Quit")
     self.clearButton = wxButton(self, cID, "Clear")
-    self.click = wxCheckBox(self, bID, "Click")  # This checkbox is down when the left button is pressed 
+    self.click = wxCheckBox(self, bID, "Click")  # This checkbox is down when the left button is pressed
 
     self.Reposition()  # set up sizes for layout
-    
+
     EVT_BUTTON(self, qID, canvas._OnQuit)
     EVT_BUTTON(self, cID, canvas._OnClear)
     EVT_PAINT(self, self.repaint)
     EVT_SIZE(self, self.OnSize)
     EVT_IDLE(self, self.OnIdle)
 
-    
+
   def repaint(self, event):
     dc = wxPaintDC(self)
     self.draw(dc)
@@ -142,7 +142,7 @@ class _WXCanvasDefaultStatusBar(wxStatusBar):
     self.draw(dc)
 
   def draw(self, dc):
-    # 
+    #
     field = self.GetFieldRect(1)
     extents = dc.GetTextExtent(self.old_text)
     dc.SetPen(wxTRANSPARENT_PEN)
@@ -159,11 +159,11 @@ class _WXCanvasDefaultStatusBar(wxStatusBar):
     self.redraw()
 
   def OnOver(self, x, y):
-    self.text = `x` + "," + `y`
+    self.text = repr(x) + "," + repr(y)
     self.redraw()
 
   def OnClick(self, x, y):
-    self.text = `x` + "," + `y`
+    self.text = repr(x) + "," + repr(y)
     self.click.SetValue(true)
     self.redraw()
 
@@ -199,10 +199,10 @@ class _WXCanvasDefaultStatusBar(wxStatusBar):
     field = self.GetFieldRect(0)
     self.quitButton.SetPosition(wxPoint(field.x, field.y))
     self.quitButton.SetSize(wxSize(field.width/2, field.height) )
-    
+
     self.clearButton.SetPosition(wxPoint(field.x + field.width/2, field.y))
     self.clearButton.SetSize(wxSize(field.width/2, field.height) )
-    
+
     # layout sizing of field 1 w/ check box
 
     field = self.GetFieldRect(1)

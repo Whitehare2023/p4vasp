@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #
 # HappyDoc:docStringFormat='ClassicStructuredText'
 #
@@ -43,7 +43,7 @@ Properties can be:
   - cleared from the cache
 
 """
-from UserDict import UserDict
+from collections import UserDict
 from p4vasp import *
 from types import *
 
@@ -141,7 +141,7 @@ class Property:
         elif self.status == self.GENERATING:
             try:
                 while 1:
-                    self.generator.next()
+                    next(self.generator)
             except StopIteration:
                 pass
             for notify in self.notify:
@@ -169,7 +169,7 @@ class Property:
 
     def read(self):
         """Apply the read_func."""
-        return apply(self.read_func,(self,))
+        return self.read_func(*(self,))
 
     def _read(self):
         """This function is called in thread to obtain the property value."""
@@ -285,7 +285,7 @@ class PropertyManager(UserDict):
         if type(names) is StringType:
             names=[names]
         for n in names:
-            if self.has_key(n):
+            if n in self:
                 self[n].schedule(notify)
 
     def scheduleFirst(self,names,notify=None):
@@ -297,7 +297,7 @@ class PropertyManager(UserDict):
         for i in range(len(names)-1,-1,-1):
             n=names[i]
 #    for n in names[::-1]:
-            if self.has_key(n):
+            if n in self:
                 self[n].scheduleFirst(notify)
 
     def require(self,names,notify=None):
@@ -307,7 +307,7 @@ class PropertyManager(UserDict):
         if type(names) is StringType:
             names=[names]
         for n in names:
-            if self.has_key(n):
+            if n in self:
                 self[n].require(notify)
 
     def requireNow(self,names):
@@ -317,24 +317,24 @@ class PropertyManager(UserDict):
         if type(names) is StringType:
             names=[names]
         for n in names:
-            if self.has_key(n):
+            if n in self:
                 self[n].get()
 
     def requireAll(self,notify):
         """Request all properties.
     They will be read in the separate thread if the threading is permitted.
     The notification function(s) can be specified in the *notify* argument."""
-        for p in self.values():
+        for p in list(self.values()):
             p.require(notify)
 
     def requireAllNow(self):
         """Request all properties. They will be read immediately.
     """
-        for p in self.values():
+        for p in list(self.values()):
             p.get()
 
     def __getattr__(self,attr):
-        if self.has_key(attr):
+        if attr in self:
             return self[attr].get()
         else:
             return None
@@ -343,14 +343,14 @@ class PropertyManager(UserDict):
         """Return the current value of the property (if available) or None,
     if the property has not yet been read.
         """
-        if self.has_key(attr):
+        if attr in self:
             return self[attr].value
         else:
             return None
 
     def release(self):
         """Calls release on all properties. (Makes all properties NOT_READY.)"""
-        for p in self.values():
+        for p in list(self.values()):
             p.release()
 
 class FilterPropertyManager(PropertyManager):
@@ -370,7 +370,7 @@ class FilterPropertyManager(PropertyManager):
             names=[names]
         for n in names:
             if n not in self.disabled:
-                if self.has_key(n):
+                if n in self:
                     self[n].schedule(notify)
                 else:
                     self.pm.schedule(n,notity)
@@ -384,7 +384,7 @@ class FilterPropertyManager(PropertyManager):
         for i in range(len(names)-1,-1,-1):
             n=names[i]
             if n not in self.disabled:
-                if self.has_key(n):
+                if n in self:
                     self[n].scheduleFirst(notify)
                 else:
                     self.pm.scheduleFirst(n,notify)
@@ -397,7 +397,7 @@ class FilterPropertyManager(PropertyManager):
             names=[names]
         for n in names:
             if n not in self.disabled:
-                if self.has_key(n):
+                if n in self:
                     self[n].require(notify)
                 else:
                     self.pm.require(n,notify)
@@ -410,7 +410,7 @@ class FilterPropertyManager(PropertyManager):
             names=[names]
         for n in names:
             if n not in self.disabled:
-                if self.has_key(n):
+                if n in self:
                     self[n].get()
                 else:
                     self.pm.requireNow(n)
@@ -419,36 +419,36 @@ class FilterPropertyManager(PropertyManager):
         """Request all properties.
     They will be read in the separate thread if the threading is permitted.
     The notification function(s) can be specified in the *notify* argument."""
-        for p in self.values():
+        for p in list(self.values()):
             if p.name not in self.disabled:
                 p.require(notify)
-        for p in self.pm.values():
+        for p in list(self.pm.values()):
             if p.name not in self.disabled:
                 p.require(notify)
 
     def requireAllNow(self):
         """Request all properties. They will be read immediately.
     """
-        for p in self.values():
+        for p in list(self.values()):
             if p.name not in self.disabled:
                 p.get()
-        for p in self.pm.values():
+        for p in list(self.pm.values()):
             if p.name not in self.disabled:
                 p.get()
 
     def __getitem__(self,i):
         if i not in self.disabled:
             return self.data.get(i,self.pm[i])
-        raise KeyError,i
+        raise KeyError(i)
 
 
     def __getattr__(self,attr):
-        if self.has_key(attr):
+        if attr in self:
             if attr not in self.disabled:
                 return self[attr].get()
             else:
                 return None
-        elif self.pm.has_key(attr):
+        elif attr in self.pm:
             if attr not in self.disabled:
                 return self.pm[attr].get()
             else:
@@ -460,12 +460,12 @@ class FilterPropertyManager(PropertyManager):
         """Return the current value of the property (if available) or None,
     if the property has not yet been read.
         """
-        if self.has_key(attr):
+        if attr in self:
             if attr not in self.disabled:
                 return self[attr].value
             else:
                 return None
-        elif self.pm.has_key(attr):
+        elif attr in self.pm:
             if attr not in self.disabled:
                 return self.pm[attr].value
             else:
@@ -475,10 +475,10 @@ class FilterPropertyManager(PropertyManager):
 
     def release(self):
         """Calls release on all properties. (Makes all properties NOT_READY.)"""
-        for p in self.values():
+        for p in list(self.values()):
             if p.name not in self.disabled:
                 p.release()
-        for p in self.pm.values():
+        for p in list(self.pm.values()):
             if p.name not in self.disabled:
                 p.release()
 
@@ -488,7 +488,7 @@ def wtest(x):
     return "wtest"
 
 def notify(x):
-    print "notify"
+    print("notify")
 
 if __name__=="__main__":
     import time
@@ -497,5 +497,5 @@ if __name__=="__main__":
     pm.add(p)
     pm.require("TEST",notify)
     for i in range(20):
-        print pm.TEST
+        print((pm.TEST))
         time.sleep(0.1)

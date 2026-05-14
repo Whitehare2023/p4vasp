@@ -1,27 +1,27 @@
-""" 
-A Tkinter based backend for piddle. 
-  
-Perry A. Stoll 
-  
-Created: February 15, 1999 
-  
+"""
+A Tkinter based backend for piddle.
+
+Perry A. Stoll
+
+Created: February 15, 1999
+
 Requires PIL for rotated string support.
 
-Known Problems: 
+Known Problems:
      - Doesn't handle the interactive commands yet.
      - PIL based canvas inherits lack of underlining strings from piddlePIL
-     
+
 You can find the latest version of this file:
     via http://piddle.sourceforge.net
-""" 
+"""
 
-import Tkinter, tkFont
+import tkinter, tkinter.font
 import p4vasp.piddle.piddle as piddle
 import string
-  
-__version__ = "0.3" 
-__date__    = "April 8, 1999" 
-__author__  = "Perry Stoll,  perry.stoll@mail.com " 
+
+__version__ = "0.3"
+__date__    = "April 8, 1999"
+__author__  = "Perry Stoll,  perry.stoll@mail.com "
 
 # fixups by chris lee, cwlee@artsci.wustl.edu
 # $Id: piddleTK.py,v 1.5 2000/11/11 18:31:21 clee Exp $
@@ -33,7 +33,7 @@ __author__  = "Perry Stoll,  perry.stoll@mail.com "
 #
 # ToDo: for BaseTKCanvas
 #         make sure that fontHeight() is returnng appropriate measure.  Where is this info?
-#     
+#
 # $Log: piddleTK.py,v $
 # Revision 1.5  2000/11/11 18:31:21  clee
 # add method getTkinter(..) to retrieve underlying tkinter canvas
@@ -65,8 +65,8 @@ class FontManager:
 
     def fontHeight(self, font):
         tkfont = self.piddleToTkFont(font)
-        return self._tkfontHeight(tkfont) 
-    
+        return self._tkfontHeight(tkfont)
+
     def fontAscent(self, font):
         tkfont = self.piddleToTkFont(font)
         return self._tkfontAscent(tkfont)
@@ -84,30 +84,30 @@ class FontManager:
         return ('-family %(family)s -size %(size)s '
                 '-weight %(weight)s -slant %(slant)s '
                 '-underline %(underline)s' % tkfont.config())
-    
+
 
     def getTkFontName(self, font):
         """Return a the name associated with the piddle-style FONT"""
         tkfont = self.piddleToTkFont(font)
         return str(tkfont)
 
-    def piddleToTkFont(self, font): 
+    def piddleToTkFont(self, font):
         """Return a tkFont instance based on the piddle-style FONT"""
-        if font is None: 
+        if font is None:
             return ''
 
         if font.face:
             # check if the user specified a generic face type
             # like serif or monospaced. check is case-insenstive.
             f = string.lower(font.face)
-            if self.__alt_faces.has_key(f):
+            if f in self.__alt_faces:
                 family = self.__alt_faces[f]
             else:
                 family = font.face
         else:
             # if no face is specified
             family = "Times"
-            
+
         size = font.size or 12
 
         if font.bold:
@@ -129,7 +129,7 @@ class FontManager:
         key = (family,size,weight,slant,underline)
 
         # check if we've already seen this font.
-        if self.font_cache.has_key(key):
+        if key in self.font_cache:
             # yep, don't bother creating a new one. just fetch it.
             font = self.font_cache[key]
         else:
@@ -137,10 +137,10 @@ class FontManager:
             # this way we will return info about the actual font
             # selected by Tk, which may be different than what we ask
             # for if it's not availible.
-            font = tkFont.Font(family=family, size=size, weight=weight,
+            font = tkinter.font.Font(family=family, size=size, weight=weight,
                                slant=slant,underline=underline)
             self.font_cache[(family,size,weight,slant,underline)] = font
-        
+
         return font
 
     def _tkfontAscent(self, tkfont):
@@ -150,200 +150,200 @@ class FontManager:
         return tkfont.metrics("descent")
 
 
-class BaseTKCanvas(piddle.Canvas): 
+class BaseTKCanvas(piddle.Canvas):
 
     __TRANSPARENT = ''                  # transparent for Tk color
-    def __init__(self, size=(0,0), name="piddleTK", master = None): 
+    def __init__(self, size=(0,0), name="piddleTK", master = None):
         piddle.Canvas.__init__(self, size, name)
-        self.draw_width, self.draw_height = size 
-        self._create_widgets(master) 
+        self.draw_width, self.draw_height = size
+        self._create_widgets(master)
 
         self._font_manager = FontManager()
         # XXX: do we need this?
-        # keep track of the ids of all objects created so we 
-        # can delete them later 
-        self._item_ids = [] 
+        # keep track of the ids of all objects created so we
+        # can delete them later
+        self._item_ids = []
         self._images   = []
-        
-    def _create_widgets(self, master): 
-  
-        draw_area = Tkinter.Canvas(master = master, 
-                                   height=self.draw_height, 
-                                   width=self.draw_width, 
-                                   relief=Tkinter.SUNKEN, 
-                                   background="white", 
-                                   borderwidth=2) 
+
+    def _create_widgets(self, master):
+
+        draw_area = tkinter.Canvas(master = master,
+                                   height=self.draw_height,
+                                   width=self.draw_width,
+                                   relief=tkinter.SUNKEN,
+                                   background="white",
+                                   borderwidth=2)
         #draw_area.tk.call('package','require','Tkimaging')
-        self.draw_area = draw_area 
-        self.draw_area.pack() 
-  
-        self.quit_btn = Tkinter.Button(master, 
-                                       text='QUIT', 
-                                       foreground='red', 
-                                       command = self._quit) 
-        self.quit_btn.pack(side=Tkinter.LEFT) 
-  
-        self.clear_btn = Tkinter.Button(master, 
-                                        text='CLEAR', 
-                                        foreground='red', 
-                                        command = self.clear) 
-        self.clear_btn.pack(side=Tkinter.LEFT) 
-  
+        self.draw_area = draw_area
+        self.draw_area.pack()
+
+        self.quit_btn = tkinter.Button(master,
+                                       text='QUIT',
+                                       foreground='red',
+                                       command = self._quit)
+        self.quit_btn.pack(side=tkinter.LEFT)
+
+        self.clear_btn = tkinter.Button(master,
+                                        text='CLEAR',
+                                        foreground='red',
+                                        command = self.clear)
+        self.clear_btn.pack(side=tkinter.LEFT)
+
     # special access method for underlying Tkinter.Canvas
     def getTkinterCanvas(self):
         return self.draw_area()
-          
-    def _display(self): 
-        self.flush()
-        self.draw_area.mainloop() 
-  
-    def _quit(self): 
-        self.draw_area.quit() 
 
-    # Hmmm...the postscript generated by this causes my Ghostscript to barf... 
-    def _to_ps_file(self, filename): 
-        self.draw_area.postscript(file=filename) 
-          
-  
-    def flush(self): 
-        self.draw_area.update() 
-  
-    def clear(self): 
-        map(self.draw_area.delete,self._item_ids) 
-        self._item_ids = [] 
+    def _display(self):
+        self.flush()
+        self.draw_area.mainloop()
+
+    def _quit(self):
+        self.draw_area.quit()
+
+    # Hmmm...the postscript generated by this causes my Ghostscript to barf...
+    def _to_ps_file(self, filename):
+        self.draw_area.postscript(file=filename)
+
+
+    def flush(self):
+        self.draw_area.update()
+
+    def clear(self):
+        list(map(self.draw_area.delete,self._item_ids))
+        self._item_ids = []
         self._images   = []
-        
-    def _colorToTkColor(self, c): 
-        return "#%02X%02X%02X" %( int(c.red*255), 
-                                  int(c.green*255), 
-                                  int(c.blue*255)) 
-  
-    def _getTkColor(self, color, defaultColor): 
-        if color is None: 
-            color = defaultColor 
-        if color is piddle.transparent: 
+
+    def _colorToTkColor(self, c):
+        return "#%02X%02X%02X" %( int(c.red*255),
+                                  int(c.green*255),
+                                  int(c.blue*255))
+
+    def _getTkColor(self, color, defaultColor):
+        if color is None:
+            color = defaultColor
+        if color is piddle.transparent:
             color = self.__TRANSPARENT
-        else: 
-            color = self._colorToTkColor(color) 
-        return color 
-  
-    def drawLine(self, x1, y1, x2, y2, color = None, width = None): 
-        color = self._getTkColor(color, self.defaultLineColor) 
-        if width is None: 
-            width  = self.defaultLineWidth 
+        else:
+            color = self._colorToTkColor(color)
+        return color
+
+    def drawLine(self, x1, y1, x2, y2, color = None, width = None):
+        color = self._getTkColor(color, self.defaultLineColor)
+        if width is None:
+            width  = self.defaultLineWidth
         new_item = self.draw_area.create_line(x1,y1,x2,y2,
-                                              fill=color, width=width) 
-        self._item_ids.append(new_item) 
-  
-    # NYI: curve with fill 
-    #def drawCurve(self, x1, y1, x2, y2, x3, y3, x4, y4, 
-    #              edgeColor=None, edgeWidth=None, fillColor=None, closed=0): 
-    # 
+                                              fill=color, width=width)
+        self._item_ids.append(new_item)
+
+    # NYI: curve with fill
+    #def drawCurve(self, x1, y1, x2, y2, x3, y3, x4, y4,
+    #              edgeColor=None, edgeWidth=None, fillColor=None, closed=0):
+    #
 
     def stringWidth(self, s, font=None):
         return self._font_manager.stringWidth(s, font or self.defaultFont)
-    
+
     def fontAscent(self, font=None):
         return self._font_manager.fontAscent(font or self.defaultFont)
 
     def fontDescent(self, font=None):
         return self._font_manager.fontDescent(font or self.defaultFont)
 
-    def drawString(self, s, x, y, font=None, color=None, angle=None): 
+    def drawString(self, s, x, y, font=None, color=None, angle=None):
         # fudge factor for TK on linux (at least)
         # strings are being drawn using create_text in canvas
         y = y - self.fontHeight(font) * .28 # empirical
         #y = y - self.fontDescent(font)
-    
-        color = self._getTkColor(color, self.defaultLineColor) 
-        font  = self._font_manager.getTkFontString(font or self.defaultFont) 
-        new_item = self.draw_area.create_text(x, y, text=s, 
-                                              font=font, fill=color, 
-                                              anchor=Tkinter.W 
-                                              ) 
-        self._item_ids.append(new_item) 
-  
-    def drawRect(self, x1, y1, x2, y2, edgeColor=None, 
-                 edgeWidth=None, fillColor=None): 
-        fillColor = self._getTkColor(fillColor, self.defaultFillColor) 
-        edgeColor = self._getTkColor(edgeColor, self.defaultLineColor) 
-        if edgeWidth is None: 
-            edgeWidth  = self.defaultLineWidth 
-        new_item = self.draw_area.create_rectangle(x1,y1,x2,y2, 
-                                                   fill=fillColor, 
-                                                   width=edgeWidth, 
-                                                   outline=edgeColor) 
-        self._item_ids.append(new_item) 
-          
-    # NYI: 
-    #def drawRoundRect(self, x1,y1, x2,y2, rx=5, ry=5, 
-    #                  edgeColor=None, edgeWidth=None, fillColor=None): 
-  
-  
-    def drawEllipse(self, x1,y1, x2,y2, 
-                    edgeColor=None, edgeWidth=None, fillColor=None): 
-        fillColor = self._getTkColor(fillColor, self.defaultFillColor) 
-        edgeColor = self._getTkColor(edgeColor, self.defaultLineColor) 
-        if edgeWidth is None: 
-            edgeWidth  = self.defaultLineWidth 
-        new_item = self.draw_area.create_oval(x1, y1, x2, y2, 
-                                              fill=fillColor, 
+
+        color = self._getTkColor(color, self.defaultLineColor)
+        font  = self._font_manager.getTkFontString(font or self.defaultFont)
+        new_item = self.draw_area.create_text(x, y, text=s,
+                                              font=font, fill=color,
+                                              anchor=tkinter.W
+                                              )
+        self._item_ids.append(new_item)
+
+    def drawRect(self, x1, y1, x2, y2, edgeColor=None,
+                 edgeWidth=None, fillColor=None):
+        fillColor = self._getTkColor(fillColor, self.defaultFillColor)
+        edgeColor = self._getTkColor(edgeColor, self.defaultLineColor)
+        if edgeWidth is None:
+            edgeWidth  = self.defaultLineWidth
+        new_item = self.draw_area.create_rectangle(x1,y1,x2,y2,
+                                                   fill=fillColor,
+                                                   width=edgeWidth,
+                                                   outline=edgeColor)
+        self._item_ids.append(new_item)
+
+    # NYI:
+    #def drawRoundRect(self, x1,y1, x2,y2, rx=5, ry=5,
+    #                  edgeColor=None, edgeWidth=None, fillColor=None):
+
+
+    def drawEllipse(self, x1,y1, x2,y2,
+                    edgeColor=None, edgeWidth=None, fillColor=None):
+        fillColor = self._getTkColor(fillColor, self.defaultFillColor)
+        edgeColor = self._getTkColor(edgeColor, self.defaultLineColor)
+        if edgeWidth is None:
+            edgeWidth  = self.defaultLineWidth
+        new_item = self.draw_area.create_oval(x1, y1, x2, y2,
+                                              fill=fillColor,
                                               outline=edgeColor,
-                                              width=edgeWidth) 
-        self._item_ids.append(new_item) 
-  
-    def drawArc(self, x1, y1, x2, y2, startAng=0, extent=360, 
-                edgeColor=None, edgeWidth=None, fillColor=None): 
-        fillColor = self._getTkColor(fillColor, self.defaultFillColor) 
-        edgeColor = self._getTkColor(edgeColor, self.defaultLineColor) 
-        if edgeWidth is None: 
-            edgeWidth  = self.defaultLineWidth 
-        new_item = self.draw_area.create_arc(x1, y1, x2, y2, 
-                                             start=startAng, 
-                                             extent=extent, 
-                                             fill=fillColor, 
+                                              width=edgeWidth)
+        self._item_ids.append(new_item)
+
+    def drawArc(self, x1, y1, x2, y2, startAng=0, extent=360,
+                edgeColor=None, edgeWidth=None, fillColor=None):
+        fillColor = self._getTkColor(fillColor, self.defaultFillColor)
+        edgeColor = self._getTkColor(edgeColor, self.defaultLineColor)
+        if edgeWidth is None:
+            edgeWidth  = self.defaultLineWidth
+        new_item = self.draw_area.create_arc(x1, y1, x2, y2,
+                                             start=startAng,
+                                             extent=extent,
+                                             fill=fillColor,
                                              width=edgeWidth,
-                                             outline=edgeColor) 
-        self._item_ids.append(new_item) 
-  
-    def drawPolygon(self, pointlist, 
-                    edgeColor=None, edgeWidth=None, fillColor=None, closed=0): 
-        fillColor = self._getTkColor(fillColor, self.defaultFillColor) 
-        edgeColor = self._getTkColor(edgeColor, self.defaultLineColor) 
-        if edgeWidth is None: 
-            edgeWidth  = self.defaultLineWidth 
+                                             outline=edgeColor)
+        self._item_ids.append(new_item)
+
+    def drawPolygon(self, pointlist,
+                    edgeColor=None, edgeWidth=None, fillColor=None, closed=0):
+        fillColor = self._getTkColor(fillColor, self.defaultFillColor)
+        edgeColor = self._getTkColor(edgeColor, self.defaultLineColor)
+        if edgeWidth is None:
+            edgeWidth  = self.defaultLineWidth
         if closed:
             # draw a closed shape
-            new_item = self.draw_area.create_polygon(pointlist, 
-                                                     fill=fillColor, 
+            new_item = self.draw_area.create_polygon(pointlist,
+                                                     fill=fillColor,
                                                      width=edgeWidth,
                                                      outline=edgeColor)
         else:
             if fillColor == self.__TRANSPARENT:
                 # draw open-ended set of lines
                 d = { 'fill':edgeColor, 'width': edgeWidth}
-                new_item = apply(self.draw_area.create_line, pointlist, d)
+                new_item = self.draw_area.create_line(*pointlist, **d)
             else:
                 # open filled shape.
                 # draw it twice:
                 #    once as a polygon with no edge outline with the fill color
                 #    and once as an open set of lines of the appropriate color
-                new_item = self.draw_area.create_polygon(pointlist, 
-                                                         fill=fillColor, 
+                new_item = self.draw_area.create_polygon(pointlist,
+                                                         fill=fillColor,
                                                          outline=self.__TRANSPARENT)
-                
+
                 self._item_ids.append(new_item)
-                
+
                 d = { 'fill':edgeColor, 'width': edgeWidth}
-                new_item = apply(self.draw_area.create_line, pointlist, d)
-                                                   
-        self._item_ids.append(new_item) 
-  
-    
-    #def drawFigure(self, partList, 
+                new_item = self.draw_area.create_line(*pointlist, **d)
+
+        self._item_ids.append(new_item)
+
+
+    #def drawFigure(self, partList,
     #               edgeColor=None, edgeWidth=None, fillColor=None):
     # use default implementation
-          
+
     def drawImage(self, image, x1, y1, x2=None,y2=None):
 
         try:
@@ -361,12 +361,12 @@ class BaseTKCanvas(piddle.Canvas):
             myimage = image.resize((x2-x1,y2-y1))
         else:
             myimage = image
-            
+
         # unless I keep a copy of this PhotoImage, it seems to be garbage collected
         # and the image is removed from the display after this function. weird
         itk = ImageTk.PhotoImage(myimage)
-        new_item = self.draw_area.create_image(x1, y1, image=itk, anchor=Tkinter.NW)
-        self._item_ids.append(new_item) 
+        new_item = self.draw_area.create_image(x1, y1, image=itk, anchor=tkinter.NW)
+        self._item_ids.append(new_item)
         self._images.append(itk)
 
 
@@ -377,10 +377,10 @@ try :
 
         """This canvas maintains a PILCanvas as its backbuffer.  Drawing calls
         are made to the backbuffer and flush() sends the image to the screen
-        using BaseTKCanvas.  
+        using BaseTKCanvas.
            You can also save what is displayed to a file in any of the formats
         supported by PIL"""
-        
+
         def  __init__(self, size=(300,300), name='TKCanvas',  master = None) :
             piddlePIL.PILCanvas.__init__(self, size=size, name=name)
             self._tkcanvas = BaseTKCanvas(size=size, name=name, master=master)

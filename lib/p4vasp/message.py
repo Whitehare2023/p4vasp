@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #
 # HappyDoc:docStringFormat='ClassicStructuredText'
 #
@@ -36,7 +36,7 @@ class DummyFile:
 
 class PrintFile:
     def write(self,x):
-        print x
+        print(x)
     def close(self):
         pass
     def flush(self):
@@ -52,7 +52,7 @@ def indent(s,istring):
     if len(l)<2:
         return s
     else:
-        return l[0]+"\n"+join(map(lambda x,i=istring:i+x, l[1:]),"\n")
+        return l[0]+"\n"+join(list(map(lambda x,i=istring:i+x, l[1:])),"\n")
 
 class MessageDriver:
     def __init__(self,logfile=DummyFile(),closeflag=0,printing=1):
@@ -102,13 +102,13 @@ class MessageDriver:
         self.printText(txt)
         self.logfile.write("CMSG  :%s\n"%indent(txt,"       "))
         self.logfile.flush()
-        raw_input("Press ENTER to continue...")
+        eval(input("Press ENTER to continue..."))
 
     def confirm_error(self,txt):
         self.printText("Error: "+txt)
         self.logfile.write("CERR  :%s\n"%indent(txt,"       "))
         self.logfile.flush()
-        raw_input("Press ENTER to continue...")
+        eval(input("Press ENTER to continue..."))
 
     def exception(self,etype=None,value=None,trace=None):
         if etype is None:

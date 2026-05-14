@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -20,7 +20,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from __future__ import generators
+
 
 from p4vasp import *
 from p4vasp.SystemPM import *
@@ -156,7 +156,7 @@ class ElectronicControlApplet(Applet,p4vasp.Selection.SelectionListener):
             w.set_text(p4vasp.Selection.selection().encode(s))
 
     def getNewSymbolNumber(self):
-        numbers=map(lambda x:x.symbol,self.lines())
+        numbers=[x.symbol for x in self.lines()]
         if not len(numbers):
             return 0
         for i in range(max(numbers)+2):

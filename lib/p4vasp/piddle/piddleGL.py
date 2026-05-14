@@ -3,11 +3,11 @@
 # glPiddle.py
 #
 #####
-# 
+#
 # Copyright 1999 by David Ascher
-# 
+#
 #                         All Rights Reserved
-# 
+#
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for any purpose and without fee is hereby granted,
 # provided that the above copyright notice appear in all copies and that
@@ -15,7 +15,7 @@
 # supporting documentation, and that the name of David Ascher not be
 # used in advertising or publicity pertaining to distribution of the
 # software without specific, written prior permission.
-# 
+#
 # DAVID ASCHER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
 # INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
 # EVENT SHALL DAVID ASCHER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
@@ -23,7 +23,7 @@
 # USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 # OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
-#                      
+#
 #####
 
 __version__ = 0.1 # public release -- Sep 28, 1999
@@ -61,7 +61,7 @@ try:
         def vertexCB(self, O):
             glVertex2d(O[0], O[1])
         def combineCB(self, p1, p2, p3):
-            print len(p3)
+            print(len(p3))
             return p3[0][-1]
         def edgeFlagCB(self, *args):
             pass
@@ -84,7 +84,7 @@ class _GLCanvas(Canvas):
             self.tesselator = gluNewTess()
         self.defaultTransparency = 1.0
         Canvas.__init__(self, size=size, name=name)
-        
+
     def __setattr__(self, attribute, value):
         self.__dict__[attribute] = value
         if attribute == "defaultTransparency":
@@ -102,12 +102,12 @@ class _GLCanvas(Canvas):
         elif attribute == "defaultLineWidth":
             if not self._inList: self._startList()
             glLineWidth(value/5.0)
-        
+
     def __repr__(self):
         return '<GLCanvas at ' + str(id(self)) + '>'
-    
+
     __str__=__repr__
-    
+
     def clear(self):
         if self._inList: self._saveList()
         self._lists = []
@@ -120,7 +120,7 @@ class _GLCanvas(Canvas):
     def _saveList(self):
         glEndList()
         self._inList = 0
-        
+
     def _startList(self):
         list = glGenLists(1)
         self._lists.append(list)
@@ -149,9 +149,9 @@ class _GLCanvas(Canvas):
                 glCallList(list)
             else:
                 func, args, kw = list
-                apply(func, args, kw)
+                func(*args, **kw)
         glFlush()
-        
+
     def drawLine(self, x1,y1, x2,y2, color=None, width=None):
         "Draw a straight line between x1,y1 and x2,y2."
         if not self._inList: self._startList()
@@ -182,13 +182,13 @@ class _GLCanvas(Canvas):
         glVertex2f(x2, y2)
         glVertex2f(0,0)
         glEnd()
-        
-    def drawPolygon(self, pointlist, 
+
+    def drawPolygon(self, pointlist,
                     edgeColor=None, edgeWidth=None, fillColor=None, closed=0):
         """drawPolygon(pointlist) -- draws a polygon
         pointlist: a list of (x,y) tuples defining vertices
         closed: if 1, adds an extra segment connecting the last point
-                    to the first 
+                    to the first
         """
         if not self._inList: self._startList()
 
@@ -221,7 +221,7 @@ class _GLCanvas(Canvas):
             for x,y in pointlist:
                 glVertex2f(x, y)
             glEnd()
-    
+
 
     def _drawTess(self, pointlist):
         if _have_tesselator:
@@ -274,7 +274,7 @@ class _GLCanvas(Canvas):
             try:
                 import Image
             except ImportError:
-                raise ImportError, 'Saving to a non-PPM format is not available because PIL is not installed'
+                raise ImportError('Saving to a non-PPM format is not available because PIL is not installed')
             savefname = base+'.ppm'
             glSavePPM(savefname, self._width, self._height)
             i = Image.open(savefname)
@@ -357,7 +357,7 @@ def getGLTTFontWrapper():
             if face is None: face = 'arial'
             face = string.lower(face)
             self.face = face
-            if self.maps.has_key(face):
+            if face in self.maps:
                 face = self.maps[face]
             if bold:
                 if italic:
@@ -421,16 +421,16 @@ try:
             pass
 
         def keyboard(*args):
-            print args
+            print(args)
 
         def mainloop(self):
             glutMainLoop()
-    if _debug: print "# GlutCanvas available"
+    if _debug: print("# GlutCanvas available")
 except NameError:
     pass
 
 try:
-    import Tkinter
+    import tkinter
     from OpenGL.Tk import RawOpengl
     class TkInteractive:
         def __init__(self):
@@ -452,7 +452,7 @@ try:
                 self.onKey(self, e.char, e.keysym)
 
     class ToglCanvas(_GLCanvas, RawOpengl, TkInteractive):
-        def __init__(self, size=(300,300), name='piddleGL', 
+        def __init__(self, size=(300,300), name='piddleGL',
                      master=None, double=1, depth=1,
                      **kw):
             width, height = size
@@ -463,7 +463,7 @@ try:
                    'height':height})
             self._width = width
             self._height = height
-            apply(RawOpengl.__init__, (self,), kw)
+            RawOpengl.__init__(*(self,), **kw)
             _GLCanvas.__init__(self, size=size, name=name)
             TkInteractive.__init__(self)
             self.bind('<Configure>', self.resize)
@@ -473,8 +473,8 @@ try:
             w , h = e.width, e.height
             self.configure(width=w, height=h)
             self._width = w
-            self._height= h 
-            Tkinter.Frame.configure(self)
+            self._height= h
+            tkinter.Frame.configure(self)
 
         def redraw(self):
             if self._inList: self._saveList()
@@ -489,7 +489,7 @@ try:
 
         def setInfoLine(self, s):
             pass
-    if _debug: print "# ToglCanvas available"
+    if _debug: print("# ToglCanvas available")
 except ImportError:
     pass
 
@@ -498,7 +498,7 @@ try:
 except NameError:
     GLCanvas = GlutCanvas
 except NameError:
-    raise ImportError, "Couldn't get either GLUT or Togl loaded"
+    raise ImportError("Couldn't get either GLUT or Togl loaded")
 
 def getGLUTFontWrapper():
     class GLUTFontWrapper:
@@ -516,7 +516,7 @@ def getGLUTFontWrapper():
             self.size=font.size
             if face is None: face = 'glutStrokeRomanFixed'
             face = string.lower(face)
-            if self.maps.has_key(face):
+            if face in self.maps:
                 face = self.maps[face]
             self.glutface = face
         def stringWidth(self, s):
@@ -552,16 +552,16 @@ else:
 
 try:
     FontWrapper = firstTry()
-    FontSupport = 1 
+    FontSupport = 1
 except ImportError:
     try:
         FontWrapper = secondTry()
-        FontSupport = 1 
+        FontSupport = 1
     except ImportError:
         FontSupport = 0
 
 if _debug:
-    if FontSupport == 0:	
-        print "# Can't find font support"
+    if FontSupport == 0:
+        print("# Can't find font support")
     else:
-        print "# Using fonts from:", FontWrapper.__name__
+        print("# Using fonts from:", FontWrapper.__name__)

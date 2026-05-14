@@ -50,7 +50,7 @@ def extractPointer(x):
     return x
 
 class AtomtypesRecord(cp4vasp.AtomtypesRecord,p4vasp.Structure.AtomtypesRecord):
-    _keys_=map(intern,["element",
+    _keys_=list(map(intern,["element",
                        "atomspertype",
                        "mass",
                        "valence",
@@ -60,7 +60,7 @@ class AtomtypesRecord(cp4vasp.AtomtypesRecord,p4vasp.Structure.AtomtypesRecord):
                        "n",
                        "red",
                        "green",
-                       "blue"])
+                       "blue"]))
 
 
     def __init__(self,init=None,pointer=None):
@@ -138,7 +138,7 @@ class AtomtypesRecord(cp4vasp.AtomtypesRecord,p4vasp.Structure.AtomtypesRecord):
     def __getattr__(self,name):
         method = AtomtypesRecord.__getmethods__.get(name,None)
         if method: return method(self.this)
-        raise AttributeError,name
+        raise AttributeError(name)
 
     def __len__(self):return len(self._keys_)
 
@@ -147,14 +147,14 @@ class AtomtypesRecord(cp4vasp.AtomtypesRecord,p4vasp.Structure.AtomtypesRecord):
             i=self._keys_[i]
         method = AtomtypesRecord.__getmethods__.get(i,None)
         if method: return method(self.this)
-        raise IndexError,i
+        raise IndexError(i)
 
     def __setitem__(self,i,value):
         if (type(i) is IntType):
             i=self._keys_[i]
         method = AtomtypesRecord.__setmethods__.get(i,None)
         if method: return method(self.this,value)
-        raise AttributeError,name
+        raise AttributeError(name)
 
     def __str__(self):
         s="cAtomtypesRecord{\n"
@@ -175,7 +175,7 @@ class AtomtypesRecord(cp4vasp.AtomtypesRecord,p4vasp.Structure.AtomtypesRecord):
                 if x in f:
                     self[x]=a[x]
         else:
-            raise TypeError,a
+            raise TypeError(a)
     def __del__(self, destroy= _cp4vasp.delete_AtomtypesRecord):
         try:
             if self.thisown:
@@ -220,7 +220,7 @@ class AtomInfo(cp4vasp.AtomInfo,p4vasp.Structure.AtomInfo):
                 self.setRecord(i,a[i])
         else:
 #        print "cStructure.setAtomInfo",a
-            raise TypeError,a
+            raise TypeError(a)
 
     def __delitem__(self,i):
         self.delitem(i)
@@ -232,7 +232,7 @@ class AtomInfo(cp4vasp.AtomInfo,p4vasp.Structure.AtomInfo):
             value=AtomtypesRecord(value)
             _cp4vasp.AtomInfo_append(self.this,value)
         else:
-            raise TypeError,value
+            raise TypeError(value)
 
     def extend(self,l):
         "Calls *self.append()* for every element of *l* ."
@@ -252,7 +252,7 @@ class AtomInfo(cp4vasp.AtomInfo,p4vasp.Structure.AtomInfo):
             self.help_record.setAtomtypesRecord(value)
             _cp4vasp.AtomInfo_setRecord(self.this,i,self.help_record.this)
         else:
-            raise TypeError,value
+            raise TypeError(value)
 
     def __repr__(self):
         return "<C AtomInfo instance at %s>" % (self.this,)
@@ -271,11 +271,11 @@ class AtomInfo(cp4vasp.AtomInfo,p4vasp.Structure.AtomInfo):
 
     def __getattr__(self,name):
         if name=="atomspertype":
-            return map(lambda x:x.atomspertype,self)
+            return [x.atomspertype for x in self]
         else:
             method = AtomInfo.__getmethods__.get(name,None)
             if method: return method(self.this)
-            raise AttributeError,name
+            raise AttributeError(name)
 
     def __getitem__(self,i):
         return self.getRecord(i)
@@ -300,7 +300,7 @@ class AtomInfo(cp4vasp.AtomInfo,p4vasp.Structure.AtomInfo):
             for i in range(0,min(len(self),len(l))):
                 self.data[i][field] = l[i]
         else:
-            raise AttributeError,field
+            raise AttributeError(field)
 
     def fillAttributesWithTable(self,table):
         """
@@ -371,7 +371,7 @@ class SelectiveArrayWrapper:
         return SelectiveArrayItemWrapper(self.s,i)
     def __setitem__(self,i,v):
         if len(v)>3:
-            print "Warning: len(v)=%d in SelectiveArrayWrapper.__setitem__"%len(v)
+            print(("Warning: len(v)=%d in SelectiveArrayWrapper.__setitem__"%len(v)))
         s=self.s
         s.setSelectiveDOF(3*i+0,v[0])
         s.setSelectiveDOF(3*i+1,v[1])
@@ -531,7 +531,7 @@ class Structure(p4vasp.Structure.Structure):
         return _cp4vasp.Structure_getNumberOfSpecies(self.this)
 
     def getRecord(self,i):
-        val = apply(_cp4vasp.Structure_getRecord,args)
+        val = _cp4vasp.Structure_getRecord(*args)
         if val: val = AtomtypesRecordPtr(val)
         return val
 
@@ -593,7 +593,7 @@ class Structure(p4vasp.Structure.Structure):
         method = Structure.__getmethods__.get(name,None)
         if method:
             return method(self.this)
-        raise AttributeError,name
+        raise AttributeError(name)
 
     def setSelective(self,flag):
         return _cp4vasp.Structure_setSelective(self.this,flag)

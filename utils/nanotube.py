@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import sys
 from math import *
@@ -84,8 +84,8 @@ def makeArmchair(nn,aCC=1.419398,r=None,x_shift=0.0,y_shift=0.0,z_shift=0.0):
 
 if __name__=="__main__":
     if len(argv)<3:
-        print "%s n m"
-        print "Creates an (n,m) nanotube - only zigzag and armchair tubes are supported."
+        print("%s n m")
+        print("Creates an (n,m) nanotube - only zigzag and armchair tubes are supported.")
     else:
         n,m=int(argv[1]),int(argv[2])
         if m:

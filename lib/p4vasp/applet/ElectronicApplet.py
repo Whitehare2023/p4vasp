@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 #  p4vasp is a GUI-program and a library for processing outputs of the
 #  Vienna Ab-inition Simulation Package (VASP)
@@ -20,7 +20,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from __future__ import generators
+
 from p4vasp import *
 from p4vasp.applet.Applet import *
 from p4vasp.applet.GraphWindowApplet import *
@@ -32,11 +32,11 @@ import time
 import gtk
 
 
-orbitals  =map(intern,["s","px","py","pz","dxy","dyz","dxz","dz2","dx2",
-                       "f1","f2","f3","f4","f5","f6","f7"])
-orbitals_p=map(intern,["px","py","pz"])
-orbitals_d=map(intern,["dxy","dyz","dxz","dz2","dx2"])
-orbitals_f=map(intern,["f1","f2","f3","f4","f5","f6","f7"])
+orbitals  =list(map(intern,["s","px","py","pz","dxy","dyz","dxz","dz2","dx2",
+                       "f1","f2","f3","f4","f5","f6","f7"]))
+orbitals_p=list(map(intern,["px","py","pz"]))
+orbitals_d=list(map(intern,["dxy","dyz","dxz","dz2","dx2"]))
+orbitals_f=list(map(intern,["f1","f2","f3","f4","f5","f6","f7"]))
 
 class Line:
     SHOW_NONE=0
@@ -181,9 +181,9 @@ class Line:
             orb.append("f")
         yield 1
 
-        indexes=filter(lambda x:x is not None,map(data.fieldIndex,orb))
+        indexes=[x for x in map(data.fieldIndex,orb) if x is not None]
 
-        spinrange=range(len(data))
+        spinrange=list(range(len(data)))
         if len(data)>1:
             if self.spin==1:
                 spinrange=[0]
@@ -269,11 +269,11 @@ class Line:
         if contains_some_elements_from_set(orb,orbitals_f):
             orb.append("f")
 
-        indexes=filter(lambda x:x is not None,map(data.fieldIndex,orb))
+        indexes=[x for x in map(data.fieldIndex,orb) if x is not None]
 
         msg().status("Prepare..")
         yield 1
-        spinrange=range(len(data[0]))
+        spinrange=list(range(len(data[0])))
         if len(data[0])>1:
             if self.spin==1:
                 spinrange=[0]
@@ -513,10 +513,10 @@ class ElectronicApplet(GraphWindowApplet):
                         e=self.e_fermi
                         if tdos is not None:
                             if len(tdos)==2:
-                                self.total_dos=[map(lambda x,e=e:(x[0]-e,x[1]),tdos[0]),
-                                map(lambda x,e=e:(x[0]-e,-x[1]),tdos[1])]
+                                self.total_dos=[list(map(lambda x,e=e:(x[0]-e,x[1]),tdos[0])),
+                                list(map(lambda x,e=e:(x[0]-e,-x[1]),tdos[1]))]
                             else:
-                                self.total_dos=[map(lambda x,e=e:(x[0]-e,x[1]),tdos[0])]
+                                self.total_dos=[list(map(lambda x,e=e:(x[0]-e,x[1]),tdos[0]))]
 
                         msg().status("OK")
                         yield 1
@@ -675,7 +675,7 @@ class ElectronicApplet(GraphWindowApplet):
                     for j in range(len(l.eigenval)):
                         s=Set()
                         s.type="xysize"
-                        s.data=map(lambda x,s=l.symbol_size:(x[0],x[1],s*x[2]),l.eigenval[j])
+                        s.data=list(map(lambda x,s=l.symbol_size:(x[0],x[1],s*x[2]),l.eigenval[j]))
                         s.line=0
                         s.symbol=l.symbol
                         if l.symbol==-1:
@@ -693,7 +693,7 @@ class ElectronicApplet(GraphWindowApplet):
         if t in [self.SHOW_DOS_X,self.SHOW_DOS_BANDS]:
             g=w[dosgi]
             for i in range(len(g)):
-                g[i].data = map(lambda x:(x[1],x[0]),g[i].data)
+                g[i].data = [(x[1],x[0]) for x in g[i].data]
         if t in [self.SHOW_IPR,self.SHOW_DOS_IPR]:
             if self.ipr is not None:
                 s=Set()

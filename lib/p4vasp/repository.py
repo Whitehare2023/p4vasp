@@ -22,16 +22,17 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from UserDict import *
+from collections import UserDict
 from types import *
 from string import *
 from p4vasp import *
 from p4vasp.store import *
+from p4vasp.compat import resolve_dotted_name
 
 class Factory(UserDict):
     def __init__(self,d={}):
         UserDict.__init__(self,d)
-        self.sortedvalues=d.values()[:]
+        self.sortedvalues=list(d.values())[:]
 
     def add(self,x):
         self[x.Class]=x
@@ -39,30 +40,24 @@ class Factory(UserDict):
         self.sortedvalues.append(x)
 
     def findDescriptor(self,c):
-        if self.has_key(c):
+        if c in self:
             return self[c]
         else:
-            for x in self.values():
+            for x in list(self.values()):
                 if isinstance(x,c):
                     return x
             return None
 
     def getClass(self,c):
-        if self.has_key(c):
+        if c in self:
             return self[c].Class
-        v=map(strip,split(c,"."))
-        if len(v) and len(c):
-            if len(v)==1:
-                c=eval(c)
-            else:
-                exec "import %s\nc=%s\n"%(join(v[:-1],"."),c)
-        return c
+        return resolve_dotted_name(c, globals())
 
     def create(self,c,*arg):
-        if self.has_key(c):
-            return apply(self[c].create,arg)
+        if c in self:
+            return self[c].create(*arg)
         if type(c) is StringType:
-            return apply(self.getClass(c),arg)
+            return self.getClass(c)(*arg)
 
     def getStoreProfile(self):
         return FactoryProfile(factory=self)
@@ -79,13 +74,7 @@ class Repository:
         self.temporary_active=None
 
     def getClass(self,c):
-        v=map(strip,split(c,"."))
-        if len(v) and len(c):
-            if len(v)==1:
-                c=eval(c)
-            else:
-                exec "import %s\nc=%s\n"%(join(v[:-1],"."),c)
-        return c
+        return resolve_dotted_name(c, globals())
     def __len__(self):
         if self.temporary_active is None:
             return len(self.data)
@@ -149,7 +138,7 @@ class Repository:
 #    print "acrivate",x
         self.temporary_active=None
         if x is not None:
-            m=map(id,self.data)
+            m=list(map(id,self.data))
             if id(x) in m:
                 del self.data[m.index(id(x))]
                 self.insert(0,x)
@@ -193,7 +182,7 @@ class Descriptor:
         self.Class=Class
         if type(keywords)==StringType:
             keywords=split(keywords)
-        self.keywords=map(intern,keywords)
+        self.keywords=list(map(intern,keywords))
         self.prototype=prototype
 
     def getFullName(self):
@@ -207,9 +196,9 @@ class Descriptor:
 
     def create(self,*arg):
         if self.prototype is not None:
-            return apply(self.prototype.create,arg)
+            return self.prototype.create(*arg)
         else:
-            return apply(self.Class,arg)
+            return self.Class(*arg)
 
 
 
@@ -225,7 +214,7 @@ class FactoryProfile(Profile):
         dp=DescriptorProfile()
         self.addClass(dp)
         if factory is not None:
-            for f in factory.values():
+            for f in list(factory.values()):
                 if f.prototype is not None:
                     if f.prototype.setup_profile is not None:
                         dp.addClass(f.prototype.setup_profile)
@@ -251,7 +240,7 @@ class FactoryProfile(Profile):
             f.write(' label="%s"'%label)
         f.write(">\n")
 
-        for x in obj.values():
+        for x in list(obj.values()):
             self.write(f,x,indent+1)
 
         f.write("%s</%s>\n"%(in0,self.tagname))

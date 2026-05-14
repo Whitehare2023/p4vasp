@@ -1,8 +1,8 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 from string import *
-from UserList import *
-from ConfigParser import *
+from collections import *
+from configparser import *
 from os import mkdir
 import os.path
 from p4vasp import *
@@ -26,7 +26,7 @@ class DBI:
 
 
     def assure(self,key):
-        if self.subst.has_key(key):
+        if key in self.subst:
             return 1
         raise Exception("The %s is missing."%(key[1:]))
 
@@ -35,7 +35,7 @@ class DBI:
             self.name=name
 
         self.cfg.update(c)
-        for k,v in self.cfg.items():
+        for k,v in list(self.cfg.items()):
             if lower(k) in ["user_uid","username"]:
                 self.subst["#"+upper(k)]='"%s"'%v
                 continue
@@ -63,9 +63,9 @@ class DBI:
         return self.db is not None
 
     def subs(self,s):
-        keys=map(lambda x:(-len(x),x),self.subst.keys())
+        keys=[(-len(x),x) for x in list(self.subst.keys())]
         keys.sort()
-        keys=map(lambda x:x[1],keys)
+        keys=[x[1] for x in keys]
         for k in keys:
             s=replace(s,k,self.subst[k])
 #    print s
@@ -103,7 +103,7 @@ class DBI:
     def fetchvalue(self,s):
         return self.fetchone(s)[0]
     def fetchvalues(self,s):
-        return map(lambda x:x[0],self.fetchall(s))
+        return [x[0] for x in self.fetchall(s)]
 
     def run(self,s,ignore_errors=0):
         for ss in split(s,";"):
@@ -143,7 +143,7 @@ class Query:
         self.count()
 
     def finddb(self,i):
-        for j in xrange(len(self.cumulative)-1):
+        for j in range(len(self.cumulative)-1):
             if self.cumulative[j]<=i and self.cumulative[j+1]>i:
                 return j
 
@@ -153,7 +153,7 @@ class Query:
         if n>0:
             del self.cache[:n]
 
-            for k,v in self.hash.items():
+            for k,v in list(self.hash.items()):
                 if v<n:
                     del self.hash[k]
                 else:
@@ -177,20 +177,20 @@ class Query:
 
     def get(self,i):
         if i>=0 and i<len(self):
-            if self.hash.has_key(i):
+            if i in self.hash:
 #        print "cache hit",i,self.hash[i],self.cache[self.hash[i]]
                 return self.cache[self.hash[i]]
             else:
 #        print "not in cache -> fetch",i
                 self.fetchblock(i)
-                if self.hash.has_key(i):
+                if i in self.hash:
 #          print "      got",i,self.hash[i],self.cache[self.hash[i]]
                     return self.cache[self.hash[i]]
                 else:
 #          print "error -> refresh"
                     self.refresh()
                     self.fetchblock(i)
-                    if self.hash.has_key(i):
+                    if i in self.hash:
 #            print "      got",i,self.hash[i],self.cache[self.hash[i]]
                         return self.cache[self.hash[i]]
                     else:
@@ -343,13 +343,13 @@ class P4VMixin(UserManagementMixin):
 
 
     def getDefaultCommit(self):
-        if self.cfg.has_key("default_commit"):
+        if "default_commit" in self.cfg:
             if lower(self.cfg["default_commit"]) in ["t","true","yes","y","enable","enabled"]:
                 return 1
         return 0
 
     def canCommit(self):
-        if self.cfg.has_key("commit"):
+        if "commit" in self.cfg:
             if lower(self.cfg["commit"]) in ["t","true","yes","y","enable","enabled"]:
                 return 1
         return 0
@@ -464,15 +464,15 @@ class P4VMixin(UserManagementMixin):
             if incar is not None:
                 if parameters is None:
                     parameters=incar
-                for key,value in parameters.items():
+                for key,value in list(parameters.items()):
                     msg().status("Store parameters (%s)"%key)
                     yield 1
                     fieldtype   = parameters.getFieldType(key)
                     isarray     = p4vasp.util.isArray(value)
-                    isspecified = int(incar.has_key(key))
+                    isspecified = int(key in incar)
                     if isarray:
                         if fieldtype == p4vasp.LOGICAL_TYPE:
-                            value = map(int,value)
+                            value = list(map(int,value))
                         svalue = ' '.join(map(str,value))
                     else:
                         if fieldtype == p4vasp.LOGICAL_TYPE:
@@ -500,9 +500,9 @@ class P4VMixin(UserManagementMixin):
                     spins=[-1,-2,-3,-4]
                 progress=0
                 total=len(dos)*len(dos[0])
-                for s in xrange(len(dos)):
+                for s in range(len(dos)):
                     sd=dos[s]
-                    for i in xrange(len(sd)):
+                    for i in range(len(sd)):
                         sdi=sd[i]
                         energy     =sdi[0]
                         density    =sdi[1]
@@ -527,15 +527,15 @@ class P4VMixin(UserManagementMixin):
                     spins=[-1,-2,-3,-4]
                 progress=0
                 total=len(dos)*len(dos[0])*len(dos[0][0])
-                for ion in xrange(len(dos)):
+                for ion in range(len(dos)):
                     iond=dos[ion]
-                    for spin in xrange(len(iond)):
+                    for spin in range(len(iond)):
                         sd=iond[spin]
 
-                        for i in xrange(len(sd)):
+                        for i in range(len(sd)):
                             sdi=sd[i]
                             energy     =sdi[0]
-                            for j in xrange(1,len(dos.field)):
+                            for j in range(1,len(dos.field)):
                                 density    =sdi[j]
                                 orbital    =dos.field[j]
                                 self.exe('INSERT INTO #LDOS (calc_id,spin,energy,atomnumber,orbital,density)'
@@ -682,7 +682,7 @@ class P4VMixin(UserManagementMixin):
         self.commit()
 
     def readForce(self,structure_id):
-        from matrix import Vector
+        from .matrix import Vector
         force=[]
 
         l=self.fetchall("SELECT x,y,z FROM #STRUCTFORCE WHERE structure_id=%d ORDER BY atomnumber"%(structure_id))
@@ -716,7 +716,7 @@ class SQLiteDBI(P4VMixin):
         cc.update(c)
         c=cc
         DBI.config(self,c,name)
-        if c.has_key("path"):
+        if "path" in c:
             if self.isConnected():
                 self.disconnect()
                 self.path=c["path"]
@@ -758,7 +758,7 @@ class MySQLDBI(P4VMixin):
         reconnect=0
         isconnected=self.isConnected()
         for key in ["user","password","host","database"]:
-            if c.has_key("db_"+key):
+            if "db_"+key in c:
                 if self.isConnected():
                     self.disconnect()
                 setattr(self,key,c["db_"+key])
@@ -793,7 +793,7 @@ def createFromConfig(l,prototypes={"sqlite":SQLiteDBI,"mysql":MySQLDBI}):
     for s in c.sections():
 #    try:
         t=lower(c.get(s,"type"))
-        print "CREATE",s,t
+        print(("CREATE",s,t))
 #    except:
 #      print "Section %s - type missing"%s
 #      continue
@@ -824,7 +824,7 @@ def getDatabase():
 
     if _currentDBI is not None and type(_currentDBI) != type(""):
         for x in _currentDBI:
-            print "DBI:::::::::::::",x.__class__.__name__,x.name
+            print(("DBI:::::::::::::",x.__class__.__name__,x.name))
         return _currentDBI
 
 

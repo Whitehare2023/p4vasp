@@ -50,7 +50,7 @@
 #  ifdef SIMPLE_EXCEPTIONS
 %except(python) {
   try{
-    $function
+    $action
   }
   catch(exception &e){
     PyErr_SetString(PyExc_Exception,e.what());
@@ -60,7 +60,7 @@
 #else
 %exception {
   try{
-    $function
+    $action
   }
   catch(RangeException e){
     PyErr_SetString(PyExc_IndexError,e.what());
