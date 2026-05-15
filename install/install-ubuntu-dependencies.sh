@@ -1,7 +1,6 @@
-#!/bin/bash
-sudo apt-get install python-dev g++ libx11-dev mesa-common-dev libglu1-mesa-dev python-opengl python-numpy python-glade2
-# For documentation:
-sudo apt-get install python-epydoc doxygen
+#!/usr/bin/env bash
+set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-
+exec bash "$SCRIPT_DIR/ubuntu-bootstrap.sh" --deps-only "$@"
