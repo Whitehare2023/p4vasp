@@ -5,10 +5,24 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ODP_DIR="$ROOT/odpdom"
 SRC_DIR="$ROOT/src"
 LIB_DIR="$ROOT/lib"
-PYTHON="${PYTHON:-python3}"
 CXX="${CXX:-g++}"
 SWIG="${SWIG:-swig}"
-PYTHON_CONFIG="${PYTHON_CONFIG:-python3-config}"
+
+if [[ -z "${PYTHON:-}" ]]; then
+    if [[ -x /usr/bin/python3 ]]; then
+        PYTHON=/usr/bin/python3
+    else
+        PYTHON=python3
+    fi
+fi
+
+if [[ -z "${PYTHON_CONFIG:-}" ]]; then
+    if [[ "$PYTHON" == /* && -x "${PYTHON}-config" ]]; then
+        PYTHON_CONFIG="${PYTHON}-config"
+    else
+        PYTHON_CONFIG=python3-config
+    fi
+fi
 
 require_command() {
     if ! command -v "$1" >/dev/null 2>&1; then
@@ -88,12 +102,14 @@ FLTK_LDFLAGS_VALUE="$("$FLTK_CONFIG_BIN" --use-gl --ldflags)"
 split_flags PY_LDFLAGS "$PY_LDFLAGS_VALUE"
 split_flags FLTK_CXXFLAGS "$FLTK_CXXFLAGS_VALUE"
 split_flags FLTK_LDFLAGS "$FLTK_LDFLAGS_VALUE"
+OPENGL_LDFLAGS=(-lGLU -lGL)
 
 mkdir -p "$LIB_DIR"
 
 PY_DOM_DEFINE='-DPY_DOMEXC_MODULE="p4vasp.ODPdom."'
 COMMON_DEFINES=("$PY_DOM_DEFINE" -DCHECK=1 -DVERBOSE=0 -DNO_GL_LISTS_S -DNO_THREADS)
 
+echo "Using Python executable: $PYTHON"
 echo "Using Python include: $PY_INCLUDE"
 echo "Using extension suffix: $EXT_SUFFIX"
 echo "Using FLTK config: $FLTK_CONFIG_BIN"
@@ -190,6 +206,7 @@ echo "Linking $OUTPUT"
     "${P4VASP_OBJECTS[@]}" \
     "${ODP_OBJECTS[@]}" \
     "${FLTK_LDFLAGS[@]}" \
+    "${OPENGL_LDFLAGS[@]}" \
     "${PY_LDFLAGS[@]}"
 
 cp "$SRC_DIR/cp4vasp.py" "$LIB_DIR/cp4vasp.py"
