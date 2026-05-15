@@ -207,7 +207,7 @@ class BuilderApplet(Applet):#p4vasp.Selection.SelectionListener
         self.text_editor.hide()
         self.model=StructureTreeModel(self)
         self.treeview,self.treeviewscrolled=self.make_treeview(self.model,self.xml.get_widget("treeview"))
-        self.table_editor.add(self.treeviewscrolled)
+        self.table_editor.pack_start(self.treeviewscrolled,True,True,0)
         self.textview.get_buffer().connect("changed",self.on_textbuff_changed_handler)
         for i in range(3):
             for j in range(3):
@@ -334,6 +334,9 @@ class BuilderApplet(Applet):#p4vasp.Selection.SelectionListener
 
         # Create scrollbars around the view.
         scrolled = gtk.ScrolledWindow()
+        scrolled.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
+        scrolled.set_shadow_type(gtk.SHADOW_IN)
+        scrolled.set_size_request(-1,220)
         scrolled.add(view)
         scrolled.show()
 

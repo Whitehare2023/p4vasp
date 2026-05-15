@@ -536,6 +536,14 @@ class Frame(SystemListListener):
                 if v[0]=="astart":
                     x.connect("clicked",startApplet,v[1],self)
 
+    def packEmbeddedAppletPanel(self,panel):
+        parent=panel.get_parent()
+        if parent is self.applet_box:
+            return
+        if parent is not None:
+            parent.remove(panel)
+        self.applet_box.pack_start(panel,True,True,0)
+
     def showApplet(self,applet):
         if not applet.applet_ready:
             if applet.showmode in [applet.EMBEDDED_MODE,applet.EMBEDDED_ONLY_MODE]:
@@ -547,7 +555,7 @@ class Frame(SystemListListener):
                 if panel is None:
                     msg().confirm_error("Can not start applet %s"%applet.name)
                     return None
-                self.applet_box.add(panel)
+                self.packEmbeddedAppletPanel(panel)
                 panel.show()
 #       panel.realize()
         #      page=self.notebook.page_num(panel)
@@ -613,10 +621,7 @@ class Frame(SystemListListener):
                 return None
             if self.embedded_applet is not None:
                 self.embedded_applet.destroyApplet()
-            if panel.get_parent() is None:
-                self.applet_box.add(panel)
-            else:
-                panel.reparent(self.applet_box)
+            self.packEmbeddedAppletPanel(panel)
             self.applet_box.show_all()
 #      panel.show()
 #      panel.realize()

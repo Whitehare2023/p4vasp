@@ -32,7 +32,7 @@ void win_close_callback(Fl_Widget *w){
   if (((VisFLWindow*)w)->win!=NULL){
     VisBackEventQueue::get()->append(VisBackEvent::createWinClose(((VisFLWindow*)w)->win));  
   }
-//  ((VisFLWindow *)w)->hide();
+  ((VisFLWindow *)w)->hide();
 }
 
 VisFLWindow::~VisFLWindow(){

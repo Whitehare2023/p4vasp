@@ -30,7 +30,9 @@ _INT_PROPS = {
     "width_chars",
     "width_request",
     "xpad",
+    "x_padding",
     "ypad",
+    "y_padding",
 }
 _FLOAT_PROPS = {"value", "lower", "upper", "step_increment", "page_increment", "xalign", "yalign"}
 
@@ -110,6 +112,22 @@ def _events(value):
     for part in value.split("|"):
         result |= int(masks.get(part.strip(), 0))
     return Gdk.EventMask(result)
+
+
+def _attach_options(value):
+    raw = (value or "").strip()
+    if not raw:
+        return Gtk.AttachOptions(0)
+    result = Gtk.AttachOptions(0)
+    for part in raw.replace("|", " ").split():
+        token = part.strip().upper()
+        if token in ("GTK_FILL", "FILL"):
+            result |= Gtk.AttachOptions.FILL
+        elif token in ("GTK_EXPAND", "EXPAND"):
+            result |= Gtk.AttachOptions.EXPAND
+        elif token in ("GTK_SHRINK", "SHRINK"):
+            result |= Gtk.AttachOptions.SHRINK
+    return result
 
 
 def _value(name, value):
@@ -445,7 +463,11 @@ class XML:
             right = int(packing.get("right_attach", str(left + 1)) or left + 1)
             top = int(packing.get("top_attach", "0") or 0)
             bottom = int(packing.get("bottom_attach", str(top + 1)) or top + 1)
-            parent.attach(child, left, right, top, bottom)
+            x_options = _attach_options(packing.get("x_options", "GTK_EXPAND|GTK_FILL"))
+            y_options = _attach_options(packing.get("y_options", "GTK_EXPAND|GTK_FILL"))
+            x_padding = int(packing.get("x_padding", "0") or 0)
+            y_padding = int(packing.get("y_padding", "0") or 0)
+            parent.attach(child, left, right, top, bottom, x_options, y_options, x_padding, y_padding)
             return
         if isinstance(parent, Gtk.Paned):
             if parent.get_child1() is None:
