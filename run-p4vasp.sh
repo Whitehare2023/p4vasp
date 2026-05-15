@@ -4,7 +4,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [[ -z "${PYTHON:-}" ]]; then
-    if [[ -x /usr/bin/python3 ]]; then
+    if [[ -x "$ROOT/.venv-macos/bin/python3" ]]; then
+        PYTHON="$ROOT/.venv-macos/bin/python3"
+    elif [[ -x /usr/bin/python3 ]]; then
         PYTHON=/usr/bin/python3
     else
         PYTHON=python3
