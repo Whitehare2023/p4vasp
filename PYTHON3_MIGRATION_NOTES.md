@@ -14,9 +14,17 @@
 2. 保留原来的 `gtk` 调用方式，在 `lib/gtk` 下做 PyGTK 风格 facade，底层使用 PyGObject/GTK3。
 3. 保留 `data/glade2/*.glade`，用 `lib/gtk/glade.py` 做最小 libglade 兼容加载器，避免重画所有老界面。
 4. 原生可视化扩展 `_cp4vasp` 继续用 C++/SWIG 构建，只修 Python 3、现代编译器、OpenGL/FLTK 链接问题。
-5. Ubuntu 和 macOS 通过启动脚本自动安装/构建依赖，用户 clone 后用一条命令启动。
+5. Windows WSL、Ubuntu 和 macOS 通过启动脚本自动安装/构建依赖，用户 clone 后用一条命令启动。
 
 ## 当前安装入口
+
+Windows WSL (Ubuntu):
+
+```bash
+git clone -b python3 https://github.com/Whitehare2023/p4vasp.git
+cd p4vasp
+bash ubuntu-start.sh
+```
 
 Ubuntu:
 
@@ -39,6 +47,12 @@ bash macos-start.sh
 ```bash
 bash ubuntu-start.sh --skip-apt
 bash macos-start.sh --skip-brew
+```
+
+WSL 如果没有图形界面，脚本会完成安装和编译后退出；之后在有 WSLg/X11 的环境里运行：
+
+```bash
+bash run-p4vasp.sh
 ```
 
 ## 注意点

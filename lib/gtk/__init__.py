@@ -146,6 +146,9 @@ class MenuItem(_Gtk.MenuItem):
             kwargs["label"] = label
         super().__init__(*args, **kwargs)
 
+    def set_right_justified(self, _right_justified):
+        return None
+
 
 class ImageMenuItem(_Gtk.ImageMenuItem if hasattr(_Gtk, "ImageMenuItem") else _Gtk.MenuItem):
     def __init__(self, label=None, *args, **kwargs):
@@ -356,7 +359,6 @@ def _set_right_justified(_item, _right_justified):
 
 if not hasattr(_Gtk.MenuItem, "set_right_justified"):
     _Gtk.MenuItem.set_right_justified = _set_right_justified
-    MenuItem.set_right_justified = _set_right_justified
 
 
 Pixmap = Image
