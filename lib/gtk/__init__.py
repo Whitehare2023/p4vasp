@@ -233,13 +233,24 @@ class FileSelection(_Gtk.FileChooserDialog):
     def __init__(self, title=None, action=None, *args, **kwargs):
         action = action or _Gtk.FileChooserAction.OPEN
         super().__init__(title=title or "", action=action, *args, **kwargs)
+        self._ok_clicked = False
         self.ok_button = self.add_button("_OK", RESPONSE_OK)
         self.cancel_button = self.add_button("_Cancel", RESPONSE_CANCEL)
+        self.ok_button.connect("clicked", self._mark_ok_clicked)
         self.connect("response", self._on_response)
+
+    def _mark_ok_clicked(self, *_args):
+        self._ok_clicked = True
 
     def _on_response(self, _dialog, response_id):
         if response_id == RESPONSE_CANCEL:
             self.hide()
+        elif response_id == RESPONSE_OK:
+            if not self._ok_clicked:
+                self.ok_button.emit("clicked")
+            self._ok_clicked = False
+            if self.get_visible():
+                self.hide()
 
 
 class GenericTreeModel:

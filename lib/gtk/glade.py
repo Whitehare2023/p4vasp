@@ -93,6 +93,24 @@ def _enum(value):
         "GTK_WRAP_CHAR": Gtk.WrapMode.CHAR,
         "GTK_WRAP_WORD_CHAR": Gtk.WrapMode.WORD_CHAR,
     }
+    aliases = {
+        "both": Gtk.ToolbarStyle.BOTH,
+        "both-horiz": Gtk.ToolbarStyle.BOTH_HORIZ,
+        "center": Gtk.ButtonBoxStyle.CENTER,
+        "edge": Gtk.ButtonBoxStyle.EDGE,
+        "end": Gtk.ButtonBoxStyle.END,
+        "horizontal": Gtk.Orientation.HORIZONTAL,
+        "icons": Gtk.ToolbarStyle.ICONS,
+        "left": Gtk.PositionType.LEFT,
+        "right": Gtk.PositionType.RIGHT,
+        "start": Gtk.ButtonBoxStyle.START,
+        "text": Gtk.ToolbarStyle.TEXT,
+        "top": Gtk.PositionType.TOP,
+        "bottom": Gtk.PositionType.BOTTOM,
+        "vertical": Gtk.Orientation.VERTICAL,
+    }
+    if value.lower() in aliases:
+        return aliases[value.lower()]
     return enums.get(value, value)
 
 
@@ -146,7 +164,7 @@ def _value(name, value):
             return float(raw)
         except ValueError:
             return 0.0
-    if raw.startswith("GTK_"):
+    if raw.startswith("GTK_") or name in ("layout_style", "orientation", "toolbar_style"):
         return _enum(raw)
     if name == "events":
         return _events(raw)
