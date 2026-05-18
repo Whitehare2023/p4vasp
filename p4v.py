@@ -536,7 +536,14 @@ class Frame(SystemListListener):
                 if v[0]=="astart":
                     x.connect("clicked",startApplet,v[1],self)
 
+    def clearEmbeddedAppletBox(self,keep=None):
+        for child in list(self.applet_box.get_children()):
+            if child is keep:
+                continue
+            self.applet_box.remove(child)
+
     def packEmbeddedAppletPanel(self,panel):
+        self.clearEmbeddedAppletBox(panel)
         parent=panel.get_parent()
         if parent is self.applet_box:
             return
@@ -582,6 +589,12 @@ class Frame(SystemListListener):
                 if id(applet.system) != id(getCurrentSystemPM()):
                     applet.setSystem(getCurrentSystemPM())
         else:
+            if applet.showmode in [applet.EMBEDDED_MODE,applet.EMBEDDED_ONLY_MODE] and applet.panel is not None:
+                if self.embedded_applet is not None and id(self.embedded_applet) != id(applet):
+                    self.embedded_applet.destroyApplet()
+                self.packEmbeddedAppletPanel(applet.panel)
+                self.applet_box.show_all()
+                self.embedded_applet=applet
             applet.show()
 
     def quickCommit(self,*arg):
@@ -688,7 +701,11 @@ def startApplet(widget,applet,frame):
 #  a=appletfactory().create(applet)
 #  frame.showApplet(a)
 #  applets().getActive(applet)
-    applets().activate(applets().factory.create(applet))
+    a=applets().findActive(applet)
+    if a is None:
+        a=applets().factory.create(applet)
+    applets().activate(a)
+    frame.showApplet(a)
 
 def init():
 #  msg().message("p4vasp init:")
@@ -766,3 +783,4 @@ def init():
 schedule(init())
 gobject.idle_add(idle_func)
 gtk.main()
+os._exit(0)
