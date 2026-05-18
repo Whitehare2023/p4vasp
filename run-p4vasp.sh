@@ -18,21 +18,22 @@ export PYTHONPATH="$ROOT/lib${PYTHONPATH:+:$PYTHONPATH}"
 export UBUNTU_MENUPROXY="${UBUNTU_MENUPROXY:-0}"
 
 "$PYTHON" "$ROOT/p4v.py" "$@" &
-APP_PID=$!
+child_pid=$!
 
-terminate_app() {
-    if kill -0 "$APP_PID" 2>/dev/null; then
-        kill "$APP_PID" 2>/dev/null || true
+cleanup() {
+    if [[ -n "${child_pid:-}" ]] && kill -0 "$child_pid" 2>/dev/null; then
+        kill -TERM "$child_pid" 2>/dev/null || true
     fi
 }
 
-trap 'terminate_app; wait "$APP_PID" 2>/dev/null; exit 130' INT
-trap 'terminate_app; wait "$APP_PID" 2>/dev/null; exit 143' TERM
+trap 'cleanup; wait "$child_pid" 2>/dev/null || true; exit 130' INT
+trap 'cleanup; wait "$child_pid" 2>/dev/null || true; exit 143' TERM
+trap cleanup EXIT
 
 set +e
-wait "$APP_PID"
-STATUS=$?
+wait "$child_pid"
+status=$?
 set -e
 
-trap - INT TERM
-exit "$STATUS"
+trap - INT TERM EXIT
+exit "$status"
