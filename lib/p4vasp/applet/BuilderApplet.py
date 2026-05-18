@@ -206,6 +206,9 @@ class BuilderApplet(Applet):#p4vasp.Selection.SelectionListener
         self.header_table=self.xml.get_widget("table1")
         if self.header_table is not None:
             self.header_table.set_size_request(-1,92)
+        self.carthesian_button.join_group(self.direct_button)
+        self.text_button.join_group(self.table_button)
+        self.direct_button.set_active(1)
         self.table_button.set_active(1)
         self.text_editor.hide()
         self.model=StructureTreeModel(self)
