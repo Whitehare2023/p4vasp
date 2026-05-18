@@ -17,4 +17,13 @@ export P4VASP_HOME="$ROOT"
 export PYTHONPATH="$ROOT/lib${PYTHONPATH:+:$PYTHONPATH}"
 export UBUNTU_MENUPROXY="${UBUNTU_MENUPROXY:-0}"
 
-exec "$PYTHON" "$ROOT/p4v.py" "$@"
+"$PYTHON" "$ROOT/p4v.py" "$@" &
+child_pid=$!
+
+cleanup() {
+    kill -TERM "$child_pid" 2>/dev/null || true
+}
+
+trap cleanup INT TERM EXIT
+wait "$child_pid"
+exit $?
