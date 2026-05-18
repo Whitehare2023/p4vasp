@@ -15,6 +15,7 @@ import gtk
 _BOOLS = {"true": True, "false": False, "yes": True, "no": False}
 _INT_PROPS = {
     "border_width",
+    "column_spacing",
     "default_height",
     "default_width",
     "height_request",
@@ -25,6 +26,7 @@ _INT_PROPS = {
     "padding",
     "position",
     "right_attach",
+    "row_spacing",
     "spacing",
     "top_attach",
     "width_chars",
@@ -385,6 +387,10 @@ class XML:
                     widget.set_alignment(float(props.get("xalign", 0.5)), float(props.get("yalign", 0.5)))
                 elif name == "border_width":
                     widget.set_border_width(value)
+                elif name == "row_spacing" and isinstance(widget, Gtk.Table):
+                    widget.set_row_spacings(value)
+                elif name == "column_spacing" and isinstance(widget, Gtk.Table):
+                    widget.set_col_spacings(value)
                 elif name == "default_width" and hasattr(widget, "set_default_size"):
                     widget.set_default_size(value, int(props.get("default_height", -1) or -1))
                 elif name == "default_height":

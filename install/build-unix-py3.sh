@@ -212,12 +212,17 @@ OUTPUT="$LIB_DIR/_cp4vasp$EXT_SUFFIX"
 rm -f "$LIB_DIR"/_cp4vasp*.so
 
 echo "Linking $OUTPUT"
-"$CXX" "${LINK_MODE[@]}" -o "$OUTPUT" \
-    "${P4VASP_OBJECTS[@]}" \
-    "${ODP_OBJECTS[@]}" \
-    "${FLTK_LDFLAGS[@]}" \
-    "${OPENGL_LDFLAGS[@]}" \
-    "${PY_LDFLAGS[@]}"
+LINK_CMD=(
+    "$CXX" "${LINK_MODE[@]}" -o "$OUTPUT"
+    "${P4VASP_OBJECTS[@]}"
+    "${ODP_OBJECTS[@]}"
+    "${FLTK_LDFLAGS[@]}"
+    "${OPENGL_LDFLAGS[@]}"
+)
+if [[ "$UNAME_S" != "Darwin" ]]; then
+    LINK_CMD+=("${PY_LDFLAGS[@]}")
+fi
+"${LINK_CMD[@]}"
 
 cp "$SRC_DIR/cp4vasp.py" "$LIB_DIR/cp4vasp.py"
 
