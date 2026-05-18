@@ -168,5 +168,9 @@ if [[ "$BUILD_EXT" -eq 1 ]]; then
 fi
 
 if [[ "$LAUNCH" -eq 1 ]]; then
-    PYTHON="$VENV/bin/python3" exec bash "$ROOT/run-p4vasp.sh" "${APP_ARGS[@]}"
+    if [[ "${APP_ARGS+x}" ]] && ((${#APP_ARGS[@]})); then
+        PYTHON="$VENV/bin/python3" exec bash "$ROOT/run-p4vasp.sh" "${APP_ARGS[@]}"
+    else
+        PYTHON="$VENV/bin/python3" exec bash "$ROOT/run-p4vasp.sh"
+    fi
 fi

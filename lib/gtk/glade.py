@@ -409,6 +409,10 @@ class XML:
                     widget.set_style(value)
                 elif name == "show_arrow" and hasattr(widget, "set_show_arrow"):
                     widget.set_show_arrow(value)
+                elif name == "group" and isinstance(widget, Gtk.RadioButton):
+                    group_widget = self.widgets.get((raw or "").strip())
+                    if isinstance(group_widget, Gtk.RadioButton):
+                        widget.join_group(group_widget)
                 elif name == "stock" and isinstance(widget, Gtk.Image):
                     widget.set_from_icon_name(value.replace("gtk-", ""), Gtk.IconSize.MENU)
                 elif name == "stock_id" and hasattr(widget, "set_stock_id"):

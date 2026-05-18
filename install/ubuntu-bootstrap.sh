@@ -118,5 +118,9 @@ if [[ "$LAUNCH" -eq 1 ]]; then
         echo "Start p4vasp later with: bash run-p4vasp.sh"
         exit 0
     fi
-    exec bash "$ROOT/run-p4vasp.sh" "${APP_ARGS[@]}"
+    if [[ "${APP_ARGS+x}" ]] && ((${#APP_ARGS[@]})); then
+        exec bash "$ROOT/run-p4vasp.sh" "${APP_ARGS[@]}"
+    else
+        exec bash "$ROOT/run-p4vasp.sh"
+    fi
 fi
